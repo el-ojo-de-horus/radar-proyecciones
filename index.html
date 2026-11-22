@@ -113,7 +113,7 @@
         <div class="bg-obsidian border border-slate-800 rounded-xl p-3.5 space-y-2.5">
           <div class="flex items-center justify-between">
             <span class="font-extrabold text-amber-400">🦁 LOTTO ACTIVO</span>
-            <span id="op-status-la" class="font-mono text-[10px] text-slate-400">Hora actual: --</span>
+            <span id="op-status-la" class="font-mono text-[10px] text-slate-400">Último: --</span>
           </div>
           <div class="grid grid-cols-2 gap-2">
             <div>
@@ -134,7 +134,7 @@
         <div class="bg-obsidian border border-slate-800 rounded-xl p-3.5 space-y-2.5">
           <div class="flex items-center justify-between">
             <span class="font-extrabold text-emerald-400">🐔 LA GRANJITA</span>
-            <span id="op-status-lg" class="font-mono text-[10px] text-slate-400">Hora actual: --</span>
+            <span id="op-status-lg" class="font-mono text-[10px] text-slate-400">Último: --</span>
           </div>
           <div class="grid grid-cols-2 gap-2">
             <div>
@@ -192,7 +192,7 @@
           <p class="text-xs text-slate-300 leading-relaxed">
             Visualiza este breve anuncio patrocinado para liberar el cálculo de tendencia de <strong id="ad-modal-target-label" class="text-white">esta hora</strong> sin costo.
           </p>
-          <a href="https://uplcm.com/4/12319976" target="_blank" rel="noopener noreferrer" class="inline-block mt-1 px-3.5 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 text-[11px] font-bold transition">
+          <a id="ad-sponsor-link" href="https://uplcm.com/4/12319976" target="_blank" rel="noopener noreferrer" class="inline-block mt-1 px-3.5 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 text-[11px] font-bold transition">
             🔗 Abrir Enlace Patrocinado
           </a>
         </div>
@@ -326,6 +326,25 @@
       return false;
     }
 
+    function cleanupStaleUnlocks() {
+      const todayPrefix = `_${getTodayStamp()}_`;
+      Object.keys(memoryUnlocks).forEach(k => {
+        if (!k.includes(todayPrefix)) delete memoryUnlocks[k];
+      });
+      try {
+        if (window.localStorage) {
+          const keysToRemove = [];
+          for (let i = 0; i < window.localStorage.length; i++) {
+            const k = window.localStorage.key(i);
+            if (k && k.startsWith('unlocked_') && !k.includes(todayPrefix)) {
+              keysToRemove.push(k);
+            }
+          }
+          keysToRemove.forEach(k => window.localStorage.removeItem(k));
+        }
+      } catch (e) {}
+    }
+
     function getUnlockStorageKey(sorteo, drawId) {
       return `unlocked_${sorteo}_${drawId}`;
     }
@@ -368,6 +387,15 @@
         hits: []
       }
     };
+
+    function appendUniqueHistory(existingHistory, entry) {
+      const list = Array.isArray(existingHistory) ? [...existingHistory] : [];
+      const last = list[list.length - 1];
+      if (!last || last.hour !== entry.hour || String(last.num) !== String(entry.num)) {
+        list.push({ hour: entry.hour, num: String(entry.num) });
+      }
+      return list.slice(-6);
+    }
 
     function getTerminalDigit(numStr) {
       if (numStr === '00') return 0;
@@ -611,7 +639,7 @@
             radarState.lotto_activo.nextHour = getNextHourLabel(latest.hour);
             radarState.lotto_activo.lastNum = latest.num;
             radarState.lotto_activo.drawId = `${getTodayStamp()}_${radarState.lotto_activo.nextHour}`;
-            radarState.lotto_activo.history = parsedData.laPairs.slice(-6);
+            radarState.lotto_activo.history = appendUniqueHistory(radarState.lotto_activo.history, latest);
             updatedAny = true;
           }
         }
@@ -625,7 +653,7 @@
             radarState.la_granjita.nextHour = getNextHourLabel(latest.hour);
             radarState.la_granjita.lastNum = latest.num;
             radarState.la_granjita.drawId = `${getTodayStamp()}_${radarState.la_granjita.nextHour}`;
-            radarState.la_granjita.history = parsedData.lgPairs.slice(-6);
+            radarState.la_granjita.history = appendUniqueHistory(radarState.la_granjita.history, latest);
             updatedAny = true;
           }
         }
@@ -645,6 +673,8 @@
     }
 
     async function initCloudSync() {
+      cleanupStaleUnlocks();
+
       const savedLocal = safeGetStorage(LOCAL_STATE_KEY);
       if (savedLocal) {
         try {
@@ -782,7 +812,7 @@
                       <span>${item.emoji}</span>
                       <span class="font-mono font-extrabold text-white">#${item.num}</span>
                       <span class="text-slate-200 font-semibold">${item.name}</span>
-                      <span class="px-1.5 py-0.2 rounded bg-emerald-500/15 text-emerald-300 font-mono text-[9px] font-bold">${hit.type}</span>
+                      <span class="px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-300 font-mono text-[9px] font-bold">${hit.type}</span>
                     </div>
                   `;
                 }).join('')}
@@ -924,6 +954,21 @@
       }).join('');
     }
 
+    // =========================================================================
+    // REWARDED POPUP AL ENTRAR A LA PÁGINA
+    // =========================================================================
+    function triggerEntryRewardedPopup() {
+      if (typeof window.show_10088762 !== 'function') return;
+
+      try {
+        window.show_10088762('pop').then(() => {
+          // Usuario vio el anuncio hasta el final o cerró en formato intersticial
+        }).catch(() => {
+          // Error al reproducir el anuncio: no interrumpir la experiencia
+        });
+      } catch (e) {}
+    }
+
     let activeUnlockTargetKey = null;
     let adTimerInterval = null;
 
@@ -933,14 +978,9 @@
 
       activeUnlockTargetKey = sorteoKey;
 
-      if (CONFIG_PRODUCCION.monetagDirectLink) {
-        try {
-          if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.openLink) {
-            window.Telegram.WebApp.openLink(CONFIG_PRODUCCION.monetagDirectLink);
-          } else {
-            window.open(CONFIG_PRODUCCION.monetagDirectLink, '_blank', 'noopener,noreferrer');
-          }
-        } catch (e) {}
+      const sponsorLink = document.getElementById('ad-sponsor-link');
+      if (sponsorLink && CONFIG_PRODUCCION.monetagDirectLink) {
+        sponsorLink.href = CONFIG_PRODUCCION.monetagDirectLink;
       }
 
       if (CONFIG_PRODUCCION.adsgramBlockId && window.Adsgram) {
@@ -1069,7 +1109,7 @@
       draw.nextHour = nextHour;
       draw.lastNum = String(newNum);
       draw.drawId = newDrawId;
-      draw.history = [...(draw.history || []), { hour: newHour, num: String(newNum) }].slice(-6);
+      draw.history = appendUniqueHistory(draw.history, { hour: newHour, num: String(newNum) });
 
       await saveRadarState();
       populateOperatorControls();
@@ -1151,6 +1191,7 @@
       initCloudSync();
       syncExternalSourceNow(true);
       setInterval(() => syncExternalSourceNow(true), 180000);
+      setTimeout(triggerEntryRewardedPopup, 600);
     });
   </script>
 </body>
