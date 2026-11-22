@@ -4,9 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>👑EL OJO DE HORUS🔥 — Radar Estadístico & Proyecciones</title>
-  <!-- SDK oficial de Telegram Mini Apps -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <!-- SDK oficial de Monetag (Zona 10088762) -->
   <script src='//libtl.com/sdk.js' data-zone='10088762' data-sdk='show_10088762'></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -229,45 +227,60 @@
     };
 
     const ANIMALITOS_CATALOG = [
-      { num: '00', name: 'BALLENA', emoji: '🐳', sector: 'Agua' },
-      { num: '0', name: 'DELFIN', emoji: '🐬', sector: 'Agua' },
-      { num: '1', name: 'CARNERO', emoji: '🐏', sector: 'Tierra' },
-      { num: '2', name: 'TORO', emoji: '🐃', sector: 'Tierra' },
-      { num: '3', name: 'CIEMPIÉS', emoji: '🐛', sector: 'Tierra' },
-      { num: '4', name: 'ALACRÁN', emoji: '🦂', sector: 'Tierra' },
-      { num: '5', name: 'LEÓN', emoji: '🦁', sector: 'Selva' },
-      { num: '6', name: 'RANA', emoji: '🐸', sector: 'Agua' },
-      { num: '7', name: 'PERICO', emoji: '🦜', sector: 'Aire' },
-      { num: '8', name: 'RATÓN', emoji: '🐭', sector: 'Tierra' },
-      { num: '9', name: 'ÁGUILA', emoji: '🦅', sector: 'Aire' },
-      { num: '10', name: 'TIGRE', emoji: '🐯', sector: 'Selva' },
-      { num: '11', name: 'GATO', emoji: '🐱', sector: 'Doméstico' },
-      { num: '12', name: 'CABALLO', emoji: '🐎', sector: 'Granja' },
-      { num: '13', name: 'MONO', emoji: '🐵', sector: 'Selva' },
-      { num: '14', name: 'PALOMA', emoji: '🕊', sector: 'Aire' },
-      { num: '15', name: 'ZORRO', emoji: '🦊', sector: 'Selva' },
-      { num: '16', name: 'OSO', emoji: '🐻', sector: 'Selva' },
-      { num: '17', name: 'PAVO', emoji: '🦃', sector: 'Granja' },
-      { num: '18', name: 'BURRO', emoji: '🐴', sector: 'Granja' },
-      { num: '19', name: 'CHIVO', emoji: '🐐', sector: 'Granja' },
-      { num: '20', name: 'COCHINO', emoji: '🐷', sector: 'Granja' },
-      { num: '21', name: 'GALLO', emoji: '🐓', sector: 'Granja' },
-      { num: '22', name: 'CAMELLO', emoji: '🐪', sector: 'Tierra' },
-      { num: '23', name: 'CEBRA', emoji: '🦓', sector: 'Selva' },
-      { num: '24', name: 'IGUANA', emoji: '🦎', sector: 'Tierra' },
-      { num: '25', name: 'GALLINA', emoji: '🐔', sector: 'Granja' },
-      { num: '26', name: 'VACA', emoji: '🐮', sector: 'Granja' },
-      { num: '27', name: 'PERRO', emoji: '🐶', sector: 'Doméstico' },
-      { num: '28', name: 'ZAMURO', emoji: '⬛️', sector: 'Aire' },
-      { num: '29', name: 'ELEFANTE', emoji: '🐘', sector: 'Selva' },
-      { num: '30', name: 'CAIMÁN', emoji: '🐊', sector: 'Agua' },
-      { num: '31', name: 'LAPA', emoji: '🦦', sector: 'Selva' },
-      { num: '32', name: 'ARDILLA', emoji: '🐿', sector: 'Selva' },
-      { num: '33', name: 'PESCADO', emoji: '🐟', sector: 'Agua' },
-      { num: '34', name: 'VENADO', emoji: '🦌', sector: 'Selva' },
-      { num: '35', name: 'JIRAFA', emoji: '🦒', sector: 'Selva' },
-      { num: '36', name: 'CULEBRA', emoji: '🐍', sector: 'Tierra' }
+      { num: '00', img: 'animalitos/00.jpg', name: 'BALLENA', emoji: '🐳', sector: 'Agua' },
+      { num: '0', img: 'animalitos/0.jpg', name: 'DELFIN', emoji: '🐬', sector: 'Agua' },
+      { num: '1', img: 'animalitos/01.jpg', name: 'CARNERO', emoji: '🐏', sector: 'Tierra' },
+      { num: '2', img: 'animalitos/02.jpg', name: 'TORO', emoji: '🐃', sector: 'Tierra' },
+      { num: '3', img: 'animalitos/03.jpg', name: 'CIEMPIÉS', emoji: '🐛', sector: 'Tierra' },
+      { num: '4', img: 'animalitos/04.jpg', name: 'ALACRÁN', emoji: '🦂', sector: 'Tierra' },
+      { num: '5', img: 'animalitos/05.jpg', name: 'LEÓN', emoji: '🦁', sector: 'Selva' },
+      { num: '6', img: 'animalitos/06.jpg', name: 'RANA', emoji: '🐸', sector: 'Agua' },
+      { num: '7', img: 'animalitos/07.jpg', name: 'PERICO', emoji: '🦜', sector: 'Aire' },
+      { num: '8', img: 'animalitos/08.jpg', name: 'RATÓN', emoji: '🐭', sector: 'Tierra' },
+      { num: '9', img: 'animalitos/09.jpg', name: 'ÁGUILA', emoji: '🦅', sector: 'Aire' },
+      { num: '10', img: 'animalitos/10.jpg', name: 'TIGRE', emoji: '🐯', sector: 'Selva' },
+      { num: '11', img: 'animalitos/11.jpg', name: 'GATO', emoji: '🐱', sector: 'Doméstico' },
+      { num: '12', img: 'animalitos/12.jpg', name: 'CABALLO', emoji: '🐎', sector: 'Granja' },
+      { num: '13', img: 'animalitos/13.jpg', name: 'MONO', emoji: '🐵', sector: 'Selva' },
+      { num: '14', img: 'animalitos/14.jpg', name: 'PALOMA', emoji: '🕊', sector: 'Aire' },
+      { num: '15', img: 'animalitos/15.jpg', name: 'ZORRO', emoji: '🦊', sector: 'Selva' },
+      { num: '16', img: 'animalitos/16.jpg', name: 'OSO', emoji: '🐻', sector: 'Selva' },
+      { num: '17', img: 'animalitos/17.jpg', name: 'PAVO', emoji: '🦃', sector: 'Granja' },
+      { num: '18', img: 'animalitos/18.jpg', name: 'BURRO', emoji: '🐴', sector: 'Granja' },
+      { num: '19', img: 'animalitos/19.jpg', name: 'CHIVO', emoji: '🐐', sector: 'Granja' },
+      { num: '20', img: 'animalitos/20.jpg', name: 'COCHINO', emoji: '🐷', sector: 'Granja' },
+      { num: '21', img: 'animalitos/21.jpg', name: 'GALLO', emoji: '🐓', sector: 'Granja' },
+      { num: '22', img: 'animalitos/22.jpg', name: 'CAMELLO', emoji: '🐪', sector: 'Tierra' },
+      { num: '23', img: 'animalitos/23.jpg', name: 'CEBRA', emoji: '🦓', sector: 'Selva' },
+      { num: '24', img: 'animalitos/24.jpg', name: 'IGUANA', emoji: '🦎', sector: 'Tierra' },
+      { num: '25', img: 'animalitos/25.jpg', name: 'GALLINA', emoji: '🐔', sector: 'Granja' },
+      { num: '26', img: 'animalitos/26.jpg', name: 'VACA', emoji: '🐮', sector: 'Granja' },
+      { num: '27', img: 'animalitos/27.jpg', name: 'PERRO', emoji: '🐶', sector: 'Doméstico' },
+      { num: '28', img: 'animalitos/28.jpg', name: 'ZAMURO', emoji: '⬛️', sector: 'Aire' },
+      { num: '29', img: 'animalitos/29.jpg', name: 'ELEFANTE', emoji: '🐘', sector: 'Selva' },
+      { num: '30', img: 'animalitos/30.jpg', name: 'CAIMÁN', emoji: '🐊', sector: 'Agua' },
+      { num: '31', img: 'animalitos/31.jpg', name: 'LAPA', emoji: '🦦', sector: 'Selva' },
+      { num: '32', img: 'animalitos/32.jpg', name: 'ARDILLA', emoji: '🐿', sector: 'Selva' },
+      { num: '33', img: 'animalitos/33.jpg', name: 'PESCADO', emoji: '🐟', sector: 'Agua' },
+      { num: '34', img: 'animalitos/34.jpg', name: 'VENADO', emoji: '🦌', sector: 'Selva' },
+      { num: '35', img: 'animalitos/35.jpg', name: 'JIRAFA', emoji: '🦒', sector: 'Selva' },
+      { num: '36', img: 'animalitos/36.jpg', name: 'CULEBRA', emoji: '🐍', sector: 'Tierra' }
     ];
+
+    function renderAnimalVisual(item, sizeClass = 'w-12 h-12', emojiClass = 'text-3xl') {
+      return `
+        <div class="${sizeClass} rounded-full bg-black border border-emerald-500/40 overflow-hidden flex items-center justify-center shadow-md shrink-0 relative">
+          <img
+            src="${item.img}"
+            alt="${item.num} ${item.name}"
+            loading="lazy"
+            class="w-full h-full object-cover scale-[1.58]"
+            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+          />
+          <span style="display:none" class="w-full h-full items-center justify-center ${emojiClass}">${item.emoji}</span>
+        </div>
+      `;
+    }
 
     const DRAW_HOURS = [
       '08:00 AM', '09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM',
@@ -333,6 +346,53 @@
       const key = getUnlockStorageKey(sorteo, drawId);
       memoryUnlocks[key] = true;
       safeSetStorage(key, '1');
+    }
+
+    function getSortLogoSVG(sorteoKey, sizeClass = 'w-11 h-11') {
+      if (sorteoKey === 'lotto_activo') {
+        return `
+          <svg viewBox="0 0 120 120" class="${sizeClass} shrink-0 drop-shadow-md" aria-label="Logo Lotto Activo">
+            <defs>
+              <radialGradient id="laGreenGrad" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#15803d"/>
+                <stop offset="100%" stop-color="#064e3b"/>
+              </radialGradient>
+            </defs>
+            <circle cx="60" cy="60" r="56" fill="#facc15" stroke="#ca8a04" stroke-width="3"/>
+            <circle cx="60" cy="14" r="9" fill="#ffffff"/>
+            <circle cx="92" cy="27" r="9" fill="#ffffff"/>
+            <circle cx="106" cy="60" r="9" fill="#ffffff"/>
+            <circle cx="92" cy="93" r="9" fill="#ffffff"/>
+            <circle cx="60" cy="106" r="9" fill="#ffffff"/>
+            <circle cx="28" cy="93" r="9" fill="#ffffff"/>
+            <circle cx="14" cy="60" r="9" fill="#ffffff"/>
+            <circle cx="28" cy="27" r="9" fill="#ffffff"/>
+            <circle cx="60" cy="60" r="41" fill="url(#laGreenGrad)" stroke="#fde047" stroke-width="2"/>
+            <text x="60" y="42" text-anchor="middle" fill="#fde047" font-family="Inter, sans-serif" font-weight="900" font-size="6.5" letter-spacing="0.8">EL PATRONUS</text>
+            <text x="60" y="61" text-anchor="middle" fill="#ffffff" font-family="Georgia, serif" font-style="italic" font-weight="900" font-size="19">Lotto</text>
+            <text x="60" y="79" text-anchor="middle" fill="#ffffff" font-family="Georgia, serif" font-style="italic" font-weight="900" font-size="18">Activo</text>
+          </svg>
+        `;
+      }
+      return `
+        <svg viewBox="0 0 120 120" class="${sizeClass} shrink-0 drop-shadow-md" aria-label="Logo La Granjita">
+          <defs>
+            <radialGradient id="lgRimGrad" cx="50%" cy="50%" r="50%">
+              <stop offset="70%" stop-color="#15803d"/>
+              <stop offset="100%" stop-color="#052e16"/>
+            </radialGradient>
+          </defs>
+          <circle cx="60" cy="60" r="56" fill="url(#lgRimGrad)" stroke="#facc15" stroke-width="3"/>
+          <circle cx="60" cy="60" r="41" fill="#111827" stroke="#dc2626" stroke-width="7" stroke-dasharray="10 10"/>
+          <circle cx="60" cy="60" r="33" fill="#14532d" stroke="#facc15" stroke-width="1.5"/>
+          <g transform="rotate(-7 60 60)">
+            <rect x="26" y="29" width="28" height="19" rx="5" fill="#090d16"/>
+            <rect x="6" y="43" width="108" height="31" rx="7" fill="#090d16"/>
+            <text x="40" y="43" text-anchor="middle" fill="#facc15" font-family="Inter, sans-serif" font-weight="900" font-size="14" letter-spacing="-0.5">LA</text>
+            <text x="60" y="67" text-anchor="middle" fill="#facc15" font-family="Inter, sans-serif" font-weight="900" font-size="22.5" letter-spacing="-0.8">GRANJITA</text>
+          </g>
+        </svg>
+      `;
     }
 
     const radarState = {
@@ -558,7 +618,6 @@
       const lowerText = cleanText.toLowerCase();
       const lgIdx = lowerText.indexOf('resultados la granjita');
 
-      // Bloque Lotto Activo: desde 'resultados lotto activo' (o inicio de tabla) hasta justo antes de 'resultados la granjita'
       let laSlice = '';
       const laStart = lowerText.indexOf('resultados lotto activo');
       if (laStart !== -1) {
@@ -567,7 +626,6 @@
         laSlice = cleanText.slice(Math.max(0, lgIdx - 2500), lgIdx);
       }
 
-      // Bloque La Granjita: desde 'resultados la granjita' hasta el siguiente título 'Resultados ...'
       let lgSlice = '';
       if (lgIdx !== -1) {
         const afterLg = cleanText.slice(lgIdx);
@@ -809,15 +867,18 @@
                 <span class="text-[10px] font-mono text-emerald-300/80">En Vivo</span>
               </div>
               <div class="flex flex-wrap gap-1.5">
-                ${drawHits.slice(0, 4).map(hit => `
+                ${drawHits.slice(0, 4).map(hit => {
+                  const hitItem = getAnimalByNum(hit.num);
+                  return `
                   <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-obsidian/90 border border-emerald-500/40 text-[11px]">
                     <span class="font-mono text-emerald-300 font-bold">${hit.hour}</span>
-                    <span>${hit.emoji}</span>
+                    ${renderAnimalVisual(hitItem, 'w-5 h-5', 'text-xs')}
                     <span class="font-mono font-extrabold text-white">${hit.num}</span>
                     <span class="text-slate-200">${hit.name}</span>
                     <span class="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 text-[9px] font-bold">${hit.type}</span>
                   </div>
-                `).join('')}
+                `;
+                }).join('')}
               </div>
             </div>
           `
@@ -840,9 +901,7 @@
 
               <div class="flex items-center justify-between bg-panel border border-slate-800 rounded-xl p-3">
                 <div class="flex items-center gap-3">
-                  <div class="w-12 h-12 rounded-xl bg-slate-900 border border-slate-700 flex items-center justify-center text-3xl shadow-inner">
-                    ${projection.primary.emoji}
-                  </div>
+                  ${renderAnimalVisual(projection.primary, 'w-14 h-14', 'text-3xl')}
                   <div>
                     <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Tendencia Principal</div>
                     <div class="font-extrabold text-base sm:text-lg text-white">
@@ -855,8 +914,8 @@
 
               <div class="grid grid-cols-2 gap-2">
                 ${projection.backups.map((b, i) => `
-                  <div class="bg-panel/80 border border-slate-800/90 rounded-xl px-3 py-2 flex items-center gap-2">
-                    <span class="text-xl">${b.emoji}</span>
+                  <div class="bg-panel/80 border border-slate-800/90 rounded-xl px-3 py-2 flex items-center gap-2.5">
+                    ${renderAnimalVisual(b, 'w-10 h-10', 'text-xl')}
                     <div>
                       <div class="text-[9px] uppercase font-bold text-slate-400">Respaldo #${i + 1}</div>
                       <div class="text-xs font-extrabold text-slate-100">
@@ -909,8 +968,8 @@
         return `
           <article class="bg-panel border ${borderAccent} rounded-2xl overflow-hidden shadow-xl flex flex-col justify-between">
             <div class="bg-gradient-to-r ${headerBg} px-4 py-3.5 border-b border-slate-800 flex items-center justify-between gap-2">
-              <div class="flex items-center gap-2.5">
-                <span class="text-2xl">${draw.icon}</span>
+              <div class="flex items-center gap-3">
+                ${getSortLogoSVG(draw.key, 'w-12 h-12')}
                 <div>
                   <h2 class="font-black text-base tracking-wide ${titleColor}">${draw.title}</h2>
                   <p class="text-[11px] text-slate-400">Último sorteo: <strong class="font-mono text-slate-200">${draw.lastHour || 'Esperando sorteo...'}</strong></p>
@@ -924,9 +983,9 @@
             <div class="p-4 space-y-4">
               <div class="bg-obsidian/90 border border-slate-800/90 rounded-2xl p-3.5 flex items-center justify-between gap-3">
                 <div class="flex items-center gap-3.5">
-                  <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-950 border border-slate-700 flex items-center justify-center text-4xl shadow-md shrink-0">
-                    ${hasResult ? lastAnimal.emoji : '⏳'}
-                  </div>
+                  ${hasResult
+                    ? renderAnimalVisual(lastAnimal, 'w-16 h-16', 'text-4xl')
+                    : `<div class="w-16 h-16 rounded-full bg-gradient-to-br from-slate-800 to-slate-950 border border-slate-700 flex items-center justify-center text-4xl shadow-md shrink-0">⏳</div>`}
                   <div>
                     <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                       ${hasResult ? `Resultado Oficial • ${draw.lastHour}` : 'Esperando primer resultado del día'}
