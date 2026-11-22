@@ -44,25 +44,35 @@ function parseResultsFromHtml(htmlText) {
     .replace(/\s+/g, ' ')
     .trim();
 
-  const hourRegex = /\b(0?[8-9]|1[0-2]):00\s*(AM|PM)\b/gi;
+  // En LotoVen cada resultado aparece como: "<numero> <NombreAnimal> <HH:MM AM/PM>"
+  // Ejemplo: "31 Lapa 08:00 AM" o "00 Ballena 06:00 PM"
+  const drawEntryRegex = /\b(00|[0-9]|1[0-9]|2[0-9]|3[0-6])\s+([A-Za-zÁÉÍÓÚáéíóúñÑ]+(?:\s+[A-Za-zÁÉÍÓÚáéíóúñÑ]+){0,2})\s+((?:0?[1-9]|1[0-2]):[0-5][0-9]\s*(?:AM|PM))\b/gi;
 
-  function extractPairs(sectionName) {
-    const idx = cleanText.toLowerCase().indexOf(sectionName.toLowerCase());
-    if (idx === -1) return [];
-    const slice = cleanText.slice(idx, idx + 1500);
-    const matches = [...slice.matchAll(hourRegex)];
+  function extractPairs(sectionHeading) {
+    const startIdx = cleanText.toLowerCase().indexOf(sectionHeading.toLowerCase());
+    if (startIdx === -1) return [];
+
+    // Cortamos justo antes de la siguiente sección de resultados si existe
+    const afterStart = cleanText.slice(startIdx);
+    const nextSectionMatch = afterStart.slice(sectionHeading.length).search(/\bResultados\s+[A-Za-z]/i);
+    const sectionSlice = nextSectionMatch !== -1
+      ? afterStart.slice(0, sectionHeading.length + nextSectionMatch)
+      : afterStart.slice(0, 2200);
+
     const pairs = [];
+    const seenHours = new Set();
 
-    for (const m of matches) {
-      const rawHour = m[0].toUpperCase().replace(/\s+/g, ' ').trim();
+    for (const match of sectionSlice.matchAll(drawEntryRegex)) {
+      const rawNum = match[1].trim();
+      const rawHour = match[3].toUpperCase().replace(/\s+/g, ' ').trim();
       const normalizedHour = rawHour.length === 7 ? `0${rawHour}` : rawHour;
-      const pos = m.index || 0;
-      const sliceBefore = cleanText.slice(Math.max(0, pos - 40), pos);
-      const numMatch = sliceBefore.match(/\b(00|[0-9]|1[0-9]|2[0-9]|3[0-6])\b\s+[A-Za-zÁÉÍÓÚáéíóúñÑ]+\s*$/);
-      if (numMatch && VALID_NUMS.has(numMatch[1])) {
-        pairs.push({ hour: normalizedHour, num: numMatch[1] });
+
+      if (VALID_NUMS.has(rawNum) && !seenHours.has(normalizedHour)) {
+        seenHours.add(normalizedHour);
+        pairs.push({ hour: normalizedHour, num: rawNum });
       }
     }
+
     return pairs;
   }
 
