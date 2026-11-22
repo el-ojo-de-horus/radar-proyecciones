@@ -227,55 +227,69 @@
     };
 
     const ANIMALITOS_CATALOG = [
-      { num: '00', img: 'animalitos/00.jpg', name: 'BALLENA', emoji: '🐳', sector: 'Agua' },
-      { num: '0', img: 'animalitos/0.jpg', name: 'DELFIN', emoji: '🐬', sector: 'Agua' },
-      { num: '1', img: 'animalitos/01.jpg', name: 'CARNERO', emoji: '🐏', sector: 'Tierra' },
-      { num: '2', img: 'animalitos/02.jpg', name: 'TORO', emoji: '🐃', sector: 'Tierra' },
-      { num: '3', img: 'animalitos/03.jpg', name: 'CIEMPIÉS', emoji: '🐛', sector: 'Tierra' },
-      { num: '4', img: 'animalitos/04.jpg', name: 'ALACRÁN', emoji: '🦂', sector: 'Tierra' },
-      { num: '5', img: 'animalitos/05.jpg', name: 'LEÓN', emoji: '🦁', sector: 'Selva' },
-      { num: '6', img: 'animalitos/06.jpg', name: 'RANA', emoji: '🐸', sector: 'Agua' },
-      { num: '7', img: 'animalitos/07.jpg', name: 'PERICO', emoji: '🦜', sector: 'Aire' },
-      { num: '8', img: 'animalitos/08.jpg', name: 'RATÓN', emoji: '🐭', sector: 'Tierra' },
-      { num: '9', img: 'animalitos/09.jpg', name: 'ÁGUILA', emoji: '🦅', sector: 'Aire' },
-      { num: '10', img: 'animalitos/10.jpg', name: 'TIGRE', emoji: '🐯', sector: 'Selva' },
-      { num: '11', img: 'animalitos/11.jpg', name: 'GATO', emoji: '🐱', sector: 'Doméstico' },
-      { num: '12', img: 'animalitos/12.jpg', name: 'CABALLO', emoji: '🐎', sector: 'Granja' },
-      { num: '13', img: 'animalitos/13.jpg', name: 'MONO', emoji: '🐵', sector: 'Selva' },
-      { num: '14', img: 'animalitos/14.jpg', name: 'PALOMA', emoji: '🕊', sector: 'Aire' },
-      { num: '15', img: 'animalitos/15.jpg', name: 'ZORRO', emoji: '🦊', sector: 'Selva' },
-      { num: '16', img: 'animalitos/16.jpg', name: 'OSO', emoji: '🐻', sector: 'Selva' },
-      { num: '17', img: 'animalitos/17.jpg', name: 'PAVO', emoji: '🦃', sector: 'Granja' },
-      { num: '18', img: 'animalitos/18.jpg', name: 'BURRO', emoji: '🐴', sector: 'Granja' },
-      { num: '19', img: 'animalitos/19.jpg', name: 'CHIVO', emoji: '🐐', sector: 'Granja' },
-      { num: '20', img: 'animalitos/20.jpg', name: 'COCHINO', emoji: '🐷', sector: 'Granja' },
-      { num: '21', img: 'animalitos/21.jpg', name: 'GALLO', emoji: '🐓', sector: 'Granja' },
-      { num: '22', img: 'animalitos/22.jpg', name: 'CAMELLO', emoji: '🐪', sector: 'Tierra' },
-      { num: '23', img: 'animalitos/23.jpg', name: 'CEBRA', emoji: '🦓', sector: 'Selva' },
-      { num: '24', img: 'animalitos/24.jpg', name: 'IGUANA', emoji: '🦎', sector: 'Tierra' },
-      { num: '25', img: 'animalitos/25.jpg', name: 'GALLINA', emoji: '🐔', sector: 'Granja' },
-      { num: '26', img: 'animalitos/26.jpg', name: 'VACA', emoji: '🐮', sector: 'Granja' },
-      { num: '27', img: 'animalitos/27.jpg', name: 'PERRO', emoji: '🐶', sector: 'Doméstico' },
-      { num: '28', img: 'animalitos/28.jpg', name: 'ZAMURO', emoji: '⬛️', sector: 'Aire' },
-      { num: '29', img: 'animalitos/29.jpg', name: 'ELEFANTE', emoji: '🐘', sector: 'Selva' },
-      { num: '30', img: 'animalitos/30.jpg', name: 'CAIMÁN', emoji: '🐊', sector: 'Agua' },
-      { num: '31', img: 'animalitos/31.jpg', name: 'LAPA', emoji: '🦦', sector: 'Selva' },
-      { num: '32', img: 'animalitos/32.jpg', name: 'ARDILLA', emoji: '🐿', sector: 'Selva' },
-      { num: '33', img: 'animalitos/33.jpg', name: 'PESCADO', emoji: '🐟', sector: 'Agua' },
-      { num: '34', img: 'animalitos/34.jpg', name: 'VENADO', emoji: '🦌', sector: 'Selva' },
-      { num: '35', img: 'animalitos/35.jpg', name: 'JIRAFA', emoji: '🦒', sector: 'Selva' },
-      { num: '36', img: 'animalitos/36.jpg', name: 'CULEBRA', emoji: '🐍', sector: 'Tierra' }
+      { num: '00', code: '00', name: 'BALLENA', emoji: '🐳', sector: 'Agua' },
+      { num: '0', code: '0', name: 'DELFIN', emoji: '🐬', sector: 'Agua' },
+      { num: '1', code: '01', name: 'CARNERO', emoji: '🐏', sector: 'Tierra' },
+      { num: '2', code: '02', name: 'TORO', emoji: '🐃', sector: 'Tierra' },
+      { num: '3', code: '03', name: 'CIEMPIÉS', emoji: '🐛', sector: 'Tierra' },
+      { num: '4', code: '04', name: 'ALACRÁN', emoji: '🦂', sector: 'Tierra' },
+      { num: '5', code: '05', name: 'LEÓN', emoji: '🦁', sector: 'Selva' },
+      { num: '6', code: '06', name: 'RANA', emoji: '🐸', sector: 'Agua' },
+      { num: '7', code: '07', name: 'PERICO', emoji: '🦜', sector: 'Aire' },
+      { num: '8', code: '08', name: 'RATÓN', emoji: '🐭', sector: 'Tierra' },
+      { num: '9', code: '09', name: 'ÁGUILA', emoji: '🦅', sector: 'Aire' },
+      { num: '10', code: '10', name: 'TIGRE', emoji: '🐯', sector: 'Selva' },
+      { num: '11', code: '11', name: 'GATO', emoji: '🐱', sector: 'Doméstico' },
+      { num: '12', code: '12', name: 'CABALLO', emoji: '🐎', sector: 'Granja' },
+      { num: '13', code: '13', name: 'MONO', emoji: '🐵', sector: 'Selva' },
+      { num: '14', code: '14', name: 'PALOMA', emoji: '🕊', sector: 'Aire' },
+      { num: '15', code: '15', name: 'ZORRO', emoji: '🦊', sector: 'Selva' },
+      { num: '16', code: '16', name: 'OSO', emoji: '🐻', sector: 'Selva' },
+      { num: '17', code: '17', name: 'PAVO', emoji: '🦃', sector: 'Granja' },
+      { num: '18', code: '18', name: 'BURRO', emoji: '🐴', sector: 'Granja' },
+      { num: '19', code: '19', name: 'CHIVO', emoji: '🐐', sector: 'Granja' },
+      { num: '20', code: '20', name: 'COCHINO', emoji: '🐷', sector: 'Granja' },
+      { num: '21', code: '21', name: 'GALLO', emoji: '🐓', sector: 'Granja' },
+      { num: '22', code: '22', name: 'CAMELLO', emoji: '🐪', sector: 'Tierra' },
+      { num: '23', code: '23', name: 'CEBRA', emoji: '🦓', sector: 'Selva' },
+      { num: '24', code: '24', name: 'IGUANA', emoji: '🦎', sector: 'Tierra' },
+      { num: '25', code: '25', name: 'GALLINA', emoji: '🐔', sector: 'Granja' },
+      { num: '26', code: '26', name: 'VACA', emoji: '🐮', sector: 'Granja' },
+      { num: '27', code: '27', name: 'PERRO', emoji: '🐶', sector: 'Doméstico' },
+      { num: '28', code: '28', name: 'ZAMURO', emoji: '⬛️', sector: 'Aire' },
+      { num: '29', code: '29', name: 'ELEFANTE', emoji: '🐘', sector: 'Selva' },
+      { num: '30', code: '30', name: 'CAIMÁN', emoji: '🐊', sector: 'Agua' },
+      { num: '31', code: '31', name: 'LAPA', emoji: '🦦', sector: 'Selva' },
+      { num: '32', code: '32', name: 'ARDILLA', emoji: '🐿', sector: 'Selva' },
+      { num: '33', code: '33', name: 'PESCADO', emoji: '🐟', sector: 'Agua' },
+      { num: '34', code: '34', name: 'VENADO', emoji: '🦌', sector: 'Selva' },
+      { num: '35', code: '35', name: 'JIRAFA', emoji: '🦒', sector: 'Selva' },
+      { num: '36', code: '36', name: 'CULEBRA', emoji: '🐍', sector: 'Tierra' }
     ];
 
+    window.handleAnimalImgError = function(imgEl, code) {
+      const step = parseInt(imgEl.dataset.fallbackStep || '0', 10);
+      if (step === 0) {
+        imgEl.dataset.fallbackStep = '1';
+        imgEl.src = `animalitos/${code}.jpg`;
+      } else {
+        imgEl.style.display = 'none';
+        if (imgEl.nextElementSibling) {
+          imgEl.nextElementSibling.style.display = 'flex';
+        }
+      }
+    };
+
     function renderAnimalVisual(item, sizeClass = 'w-12 h-12', emojiClass = 'text-3xl') {
+      const code = item.code || item.num;
       return `
         <div class="${sizeClass} rounded-full bg-black border border-emerald-500/40 overflow-hidden flex items-center justify-center shadow-md shrink-0 relative">
           <img
-            src="${item.img}"
+            src="animalitos/${code}.png"
             alt="${item.num} ${item.name}"
             loading="lazy"
             class="w-full h-full object-cover scale-[1.58]"
-            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+            onerror="handleAnimalImgError(this, '${code}')"
           />
           <span style="display:none" class="w-full h-full items-center justify-center ${emojiClass}">${item.emoji}</span>
         </div>
