@@ -57,8 +57,8 @@ function parseResultsFromHtml(htmlText) {
       const rawHour = m[0].toUpperCase().replace(/\s+/g, ' ').trim();
       const normalizedHour = rawHour.length === 7 ? `0${rawHour}` : rawHour;
       const pos = m.index || 0;
-      const windowBefore = slice.slice(Math.max(0, pos - 30), pos);
-      const numMatch = windowBefore.match(/\b(00|[0-9]|1[0-9]|2[0-9]|3[0-6])\b(?=\s+[A-Za-zÁÉÍÓÚáéíóúñÑ]+\s*$)/);
+      const sliceBefore = cleanText.slice(Math.max(0, pos - 40), pos);
+      const numMatch = sliceBefore.match(/\b(00|[0-9]|1[0-9]|2[0-9]|3[0-6])\b\s+[A-Za-zÁÉÍÓÚáéíóúñÑ]+\s*$/);
       if (numMatch && VALID_NUMS.has(numMatch[1])) {
         pairs.push({ hour: normalizedHour, num: numMatch[1] });
       }
@@ -67,16 +67,19 @@ function parseResultsFromHtml(htmlText) {
   }
 
   return {
-    laPairs: extractPairs('Lotto Activo'),
-    lgPairs: extractPairs('La Granjita')
+    laPairs: extractPairs('Resultados Lotto Activo'),
+    lgPairs: extractPairs('Resultados La Granjita')
   };
 }
 
 async function run() {
-  const url = 'https://www.loteriadehoy.com/animalitos/resultados/';
-  console.log('Consultando resultados oficiales...');
+  const url = 'https://lotoven.com/animalitos/';
+  console.log('Consultando resultados oficiales en LotoVen...');
   const res = await fetch(url, {
-    headers: { 'User-Agent': 'Mozilla/5.0 (compatible; OjoDeHorusBot/1.0)' }
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+    }
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const html = await res.text();
