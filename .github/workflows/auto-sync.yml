@@ -1,29 +1,26 @@
-name: Extractor Automatico de Sorteos
+name: Sincronizar Resultados Horarios
 
 on:
   schedule:
-    # Se ejecuta de forma automática cada 15 minutos
-    - cron: '*/15 * * * *'
-  # Te permite ejecutarlo manualmente desde GitHub si quieres probarlo
-  workflow_dispatch: 
+    - cron: '*/5 12-23 * * *'
+  workflow_dispatch:
 
 jobs:
-  scrape:
+  sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Clonar el código
+      - name: Descargar repositorio
         uses: actions/checkout@v4
 
-      - name: Instalar Node.js
+      - name: Configurar Node.js 24
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
 
-      - name: Instalar Dependencias (axios, cheerio, firebase-admin)
+      - name: Instalar dependencias
         run: npm install
 
-      - name: Ejecutar Script de Extracción
+      - name: Ejecutar sincronización hacia Firestore
         env:
-          # Pasamos la credencial segura al script
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-        run: node index.js
+        run: node sync-resultados.js
