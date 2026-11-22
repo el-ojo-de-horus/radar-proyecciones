@@ -4,8 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>👑EL OJO DE HORUS🔥 — Radar Estadístico & Proyecciones</title>
+  <!-- SDK oficial de Telegram Mini Apps -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script src='//libtl.com/sdk.js' data-zone='10088762' data-sdk='show_10088762'></script>
+  <!-- SDK oficial de Monetag para Rewarded Interstitial -->
+  <script src="//libtl.com/sdk.js" data-zone="10088762" data-sdk="show_10088762"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -162,7 +164,7 @@
     </footer>
   </main>
 
-  <!-- MODAL DE DESBLOQUEO CON ANUNCIO (show_10088762('pop')) -->
+  <!-- MODAL DE DESBLOQUEO CON ANUNCIO (show_10088762()) -->
   <div id="ad-unlock-modal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
     <div class="bg-panel border border-amber-500/50 rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl relative overflow-hidden">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
@@ -274,6 +276,9 @@
         imgEl.src = `animalitos/${code}.png`;
       } else if (step === 1) {
         imgEl.dataset.fallbackStep = '2';
+        imgEl.src = `animalitos/animalitos/${code}.jpg`;
+      } else if (step === 2) {
+        imgEl.dataset.fallbackStep = '3';
         imgEl.src = `animalitos/${code}.jpg`;
       } else {
         imgEl.style.display = 'none';
@@ -305,6 +310,38 @@
       '06:00 PM', '07:00 PM'
     ];
 
+    function normalizeHourLabel(hourStr) {
+      if (!hourStr) return '';
+      const clean = String(hourStr).toUpperCase().replace(/\s+/g, ' ').trim();
+      const match = clean.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/);
+      if (!match) return clean;
+      const hh = match[1].padStart(2, '0');
+      return `${hh}:${match[2]} ${match[3]}`;
+    }
+
+    function getHourOrderIndex(hourStr) {
+      const norm = normalizeHourLabel(hourStr);
+      const idx = DRAW_HOURS.indexOf(norm);
+      return idx === -1 ? 999 : idx;
+    }
+
+    function sortHistoryChronologically(historyList = []) {
+      const mapByHour = new Map();
+      (historyList || []).forEach(entry => {
+        if (!entry || !entry.hour || entry.num === undefined) return;
+        const normHour = normalizeHourLabel(entry.hour);
+        mapByHour.set(normHour, {
+          hour: normHour,
+          num: normalizeAnimalNum(entry.num),
+          isHit: Boolean(entry.isHit)
+        });
+      });
+
+      return Array.from(mapByHour.values()).sort(
+        (a, b) => getHourOrderIndex(a.hour) - getHourOrderIndex(b.hour)
+      );
+    }
+
     function normalizeAnimalNum(numStr) {
       const raw = String(numStr ?? '0').trim();
       if (raw === '00') return '00';
@@ -318,17 +355,24 @@
     }
 
     function getNextHourLabel(currentHour) {
-      const idx = DRAW_HOURS.indexOf(currentHour);
+      const norm = normalizeHourLabel(currentHour);
+      const idx = DRAW_HOURS.indexOf(norm);
       if (idx === -1 || idx >= DRAW_HOURS.length - 1) return DRAW_HOURS[0];
       return DRAW_HOURS[idx + 1];
     }
 
     function getTodayStamp() {
-      const d = new Date();
-      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      const now = new Date();
+      const veTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/Caracas' }));
+      return `${veTime.getFullYear()}-${String(veTime.getMonth() + 1).padStart(2, '0')}-${String(veTime.getDate()).padStart(2, '0')}`;
     }
 
-    const LOCAL_STATE_KEY = 'ojo_horus_radar_state_v2';
+    function getVenezuelaDateObj() {
+      const now = new Date();
+      return new Date(now.toLocaleString('en-US', { timeZone: 'America/Caracas' }));
+    }
+
+    const LOCAL_STATE_KEY = 'ojo_horus_radar_state_v3';
     const memoryUnlocks = {};
 
     function safeGetStorage(key) {
@@ -445,7 +489,7 @@
       return n % 10;
     }
 
-    function computeDatePyramid(dateObj = new Date()) {
+    function computeDatePyramid(dateObj = getVenezuelaDateObj()) {
       const dd = String(dateObj.getDate()).padStart(2, '0');
       const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
       const yyyy = String(dateObj.getFullYear());
@@ -464,7 +508,7 @@
     }
 
     const COMPLEMENT_TERMINAL = { 0: 5, 5: 0, 1: 6, 6: 1, 2: 7, 7: 2, 3: 8, 8: 3, 4: 9, 9: 4 };
-    const VISUAL_INVERSION = { '6': '9', '9': '6', '16': '19', '19': '16', '26': '29', '29': '26', '36': '39' };
+    const VISUAL_INVERSION = { '6': '9', '9': '6', '16': '19', '19': '16', '26': '29', '29': '26' };
 
     const VIP_TRIANGULATIONS = [
       { pair: ['12', '18'], target: '23' },
@@ -489,8 +533,9 @@
       if (!recentNums.includes(lastItem.num)) recentNums.push(lastItem.num);
       const excludeSet = new Set(recentNums.slice(-3));
 
-      const { vertex, base } = computeDatePyramid(new Date());
-      const hourIdx = Math.max(0, DRAW_HOURS.indexOf(nextHour));
+      const { vertex, base } = computeDatePyramid();
+      const hourIdx = Math.max(0, DRAW_HOURS.indexOf(normalizeHourLabel(nextHour)));
+      const sorteoOffset = sorteoKey === 'lotto_activo' ? 0 : 1;
 
       const terminalCounts = {};
       recentNums.forEach(n => {
@@ -516,7 +561,7 @@
 
       const vertexPool = findCandidatesByTerminal(vertex, excludeSet);
       const primary = vertexPool.length
-        ? vertexPool[(hourIdx + (sorteoKey === 'lotto_activo' ? 0 : 1)) % vertexPool.length]
+        ? vertexPool[(hourIdx + sorteoOffset) % vertexPool.length]
         : getAnimalByNum(String((vertex + 10) % 37));
       excludeSet.add(primary.num);
 
@@ -528,20 +573,27 @@
       } else {
         const rupturePool = findCandidatesByTerminal(ruptureTerminal, excludeSet);
         backup1 = rupturePool.length
-          ? rupturePool[hourIdx % rupturePool.length]
+          ? rupturePool[(hourIdx + sorteoOffset) % rupturePool.length]
           : findCandidatesByTerminal(base, excludeSet)[0] || ANIMALITOS_CATALOG[2];
       }
       excludeSet.add(backup1.num);
 
+      const presentNums = new Set(recentNums);
+      const absentBaseCandidates = ANIMALITOS_CATALOG.filter(
+        a => !presentNums.has(a.num) && !excludeSet.has(a.num) && getTerminalDigit(a.num) === base
+      );
+      const absentCandidates = ANIMALITOS_CATALOG.filter(
+        a => !presentNums.has(a.num) && !excludeSet.has(a.num)
+      );
+      const fallbackPool = ANIMALITOS_CATALOG.filter(a => !excludeSet.has(a.num));
+
       let backup2 = null;
-      if (!recentNums.includes('13') && !excludeSet.has('13')) {
-        backup2 = getAnimalByNum('13');
+      if (absentBaseCandidates.length > 0) {
+        backup2 = absentBaseCandidates[(hourIdx + sorteoOffset) % absentBaseCandidates.length];
+      } else if (absentCandidates.length > 0) {
+        backup2 = absentCandidates[(hourIdx * 3 + sorteoOffset) % absentCandidates.length];
       } else {
-        const presentNums = new Set(recentNums);
-        const gapCandidate = ANIMALITOS_CATALOG.find(
-          a => !presentNums.has(a.num) && !excludeSet.has(a.num) && getTerminalDigit(a.num) === base
-        ) || ANIMALITOS_CATALOG.find(a => !presentNums.has(a.num) && !excludeSet.has(a.num));
-        backup2 = gapCandidate || ANIMALITOS_CATALOG[14];
+        backup2 = fallbackPool[(hourIdx + sorteoOffset) % fallbackPool.length] || ANIMALITOS_CATALOG[14];
       }
 
       const ruptureLabel = isTerminalSaturated
@@ -559,11 +611,12 @@
 
     function evaluateHitForNewResult(draw, incomingHour, incomingNum) {
       if (!draw.lastHour) return null;
+      const normHour = normalizeHourLabel(incomingHour);
       const normalizedNum = normalizeAnimalNum(incomingNum);
       const prevProjection = computeStatisticalProjection(
         draw.key,
         draw.lastNum,
-        incomingHour,
+        normHour,
         draw.history || []
       );
 
@@ -580,21 +633,72 @@
       if (!hitType) return null;
 
       const existingHits = Array.isArray(draw.hits) ? draw.hits : [];
-      const hitId = `${getTodayStamp()}_${incomingHour}_${normalizedNum}`;
-      if (existingHits.some(h => h.id === hitId)) return null;
+      const hitId = `${getTodayStamp()}_${normHour}_${normalizedNum}`;
+      if (existingHits.some(h => h.id === hitId)) {
+        return existingHits.find(h => h.id === hitId);
+      }
 
       const animal = getAnimalByNum(normalizedNum);
       const hitRecord = {
         id: hitId,
-        hour: incomingHour,
+        hour: normHour,
         num: animal.num,
         name: animal.name,
         emoji: animal.emoji,
         type: hitType
       };
 
-      draw.hits = [hitRecord, ...existingHits].slice(0, 8);
+      draw.hits = [hitRecord, ...existingHits].slice(0, 12);
       return hitRecord;
+    }
+
+    function recomputeHistoryHits(draw) {
+      const sorted = sortHistoryChronologically(draw.history || []);
+      const hitHoursSet = new Set((draw.hits || []).map(h => normalizeHourLabel(h.hour)));
+
+      for (let i = 1; i < sorted.length; i++) {
+        const prev = sorted[i - 1];
+        const curr = sorted[i];
+        const historyBeforeCurr = sorted.slice(0, i);
+        const proj = computeStatisticalProjection(draw.key, prev.num, curr.hour, historyBeforeCurr);
+
+        let hitType = null;
+        if (proj.primary && proj.primary.num === curr.num) {
+          hitType = 'PRINCIPAL';
+        } else if (Array.isArray(proj.backups)) {
+          const bIdx = proj.backups.findIndex(b => b && b.num === curr.num);
+          if (bIdx !== -1) hitType = `RESPALDO #${bIdx + 1}`;
+        }
+
+        if (hitType) {
+          curr.isHit = true;
+          curr.hitType = hitType;
+          if (!hitHoursSet.has(curr.hour)) {
+            const animal = getAnimalByNum(curr.num);
+            draw.hits = [
+              {
+                id: `${getTodayStamp()}_${curr.hour}_${curr.num}`,
+                hour: curr.hour,
+                num: animal.num,
+                name: animal.name,
+                emoji: animal.emoji,
+                type: hitType
+              },
+              ...(draw.hits || [])
+            ].slice(0, 12);
+            hitHoursSet.add(curr.hour);
+          }
+        } else {
+          curr.isHit = hitHoursSet.has(curr.hour);
+        }
+      }
+
+      if (sorted.length > 0 && hitHoursSet.has(sorted[0].hour)) {
+        sorted[0].isHit = true;
+      }
+
+      draw.history = sorted;
+      return sorted;
     }
 
     let db = null;
@@ -622,14 +726,13 @@
         const seenHours = new Set();
         for (const m of sliceText.matchAll(drawEntryRegex)) {
           const rawNum = normalizeAnimalNum(m[1]);
-          const rawHour = m[3].toUpperCase().replace(/\s+/g, ' ').trim();
-          const normalizedHour = rawHour.length === 7 ? `0${rawHour}` : rawHour;
+          const normalizedHour = normalizeHourLabel(m[3]);
           if (validNums.has(rawNum) && !seenHours.has(normalizedHour)) {
             seenHours.add(normalizedHour);
             pairs.push({ hour: normalizedHour, num: rawNum });
           }
         }
-        return pairs;
+        return sortHistoryChronologically(pairs);
       }
 
       const lowerText = cleanText.toLowerCase();
@@ -673,6 +776,8 @@
             if (data && data.lotto_activo && data.la_granjita && data.lotto_activo.lastHour && data.la_granjita.lastHour) {
               radarState.lotto_activo = { ...radarState.lotto_activo, ...data.lotto_activo, hits: data.lotto_activo.hits || radarState.lotto_activo.hits || [] };
               radarState.la_granjita = { ...radarState.la_granjita, ...data.la_granjita, hits: data.la_granjita.hits || radarState.la_granjita.hits || [] };
+              recomputeHistoryHits(radarState.lotto_activo);
+              recomputeHistoryHits(radarState.la_granjita);
               safeSetStorage(LOCAL_STATE_KEY, JSON.stringify(radarState));
               renderAll();
               if (!silent) showToast('☁️ Resultados sincronizados en vivo');
@@ -704,7 +809,8 @@
 
         if (parsedData) {
           if (parsedData.laPairs.length > 0) {
-            const latest = parsedData.laPairs[parsedData.laPairs.length - 1];
+            const mergedLa = sortHistoryChronologically([...(radarState.lotto_activo.history || []), ...parsedData.laPairs]);
+            const latest = mergedLa[mergedLa.length - 1];
             if (latest.hour !== radarState.lotto_activo.lastHour || latest.num !== radarState.lotto_activo.lastNum) {
               const hit = evaluateHitForNewResult(radarState.lotto_activo, latest.hour, latest.num);
               if (hit) newHits.push(`🎯 ¡Acierto en LOTTO ACTIVO (${hit.hour}): ${hit.num} ${hit.name} [${hit.type}]!`);
@@ -713,12 +819,14 @@
               radarState.lotto_activo.nextHour = getNextHourLabel(latest.hour);
               radarState.lotto_activo.lastNum = latest.num;
               radarState.lotto_activo.drawId = `${getTodayStamp()}_${radarState.lotto_activo.nextHour}`;
-              radarState.lotto_activo.history = parsedData.laPairs.slice(-6);
+              radarState.lotto_activo.history = mergedLa;
+              recomputeHistoryHits(radarState.lotto_activo);
               updatedAny = true;
             }
           }
           if (parsedData.lgPairs.length > 0) {
-            const latest = parsedData.lgPairs[parsedData.lgPairs.length - 1];
+            const mergedLg = sortHistoryChronologically([...(radarState.la_granjita.history || []), ...parsedData.lgPairs]);
+            const latest = mergedLg[mergedLg.length - 1];
             if (latest.hour !== radarState.la_granjita.lastHour || latest.num !== radarState.la_granjita.lastNum) {
               const hit = evaluateHitForNewResult(radarState.la_granjita, latest.hour, latest.num);
               if (hit) newHits.push(`🎯 ¡Acierto en LA GRANJITA (${hit.hour}): ${hit.num} ${hit.name} [${hit.type}]!`);
@@ -727,7 +835,8 @@
               radarState.la_granjita.nextHour = getNextHourLabel(latest.hour);
               radarState.la_granjita.lastNum = latest.num;
               radarState.la_granjita.drawId = `${getTodayStamp()}_${radarState.la_granjita.nextHour}`;
-              radarState.la_granjita.history = parsedData.lgPairs.slice(-6);
+              radarState.la_granjita.history = mergedLg;
+              recomputeHistoryHits(radarState.la_granjita);
               updatedAny = true;
             }
           }
@@ -739,6 +848,8 @@
           newHits.forEach(msg => showToast(msg));
           if (!silent) showToast('🔄 Nuevos resultados detectados y proyectados');
         } else if (!silent) {
+          recomputeHistoryHits(radarState.lotto_activo);
+          recomputeHistoryHits(radarState.la_granjita);
           renderAll();
           showToast('📡 Radar verificado y al día');
         }
@@ -761,6 +872,8 @@
           if (parsedLocal && parsedLocal.lotto_activo && parsedLocal.la_granjita) {
             radarState.lotto_activo = { ...radarState.lotto_activo, ...parsedLocal.lotto_activo, hits: parsedLocal.lotto_activo.hits || [] };
             radarState.la_granjita = { ...radarState.la_granjita, ...parsedLocal.la_granjita, hits: parsedLocal.la_granjita.hits || [] };
+            recomputeHistoryHits(radarState.lotto_activo);
+            recomputeHistoryHits(radarState.la_granjita);
           }
         } catch (e) {}
       }
@@ -803,6 +916,8 @@
                 }
                 radarState.lotto_activo = { ...radarState.lotto_activo, ...data.lotto_activo, hits: data.lotto_activo.hits || radarState.lotto_activo.hits || [] };
                 radarState.la_granjita = { ...radarState.la_granjita, ...data.la_granjita, hits: data.la_granjita.hits || radarState.la_granjita.hits || [] };
+                recomputeHistoryHits(radarState.lotto_activo);
+                recomputeHistoryHits(radarState.la_granjita);
                 safeSetStorage(LOCAL_STATE_KEY, JSON.stringify(radarState));
                 updateCloudBadge('☁️ En Vivo (Sincronizado)');
                 renderAll();
@@ -845,11 +960,18 @@
       const draws = [radarState.lotto_activo, radarState.la_granjita];
 
       container.innerHTML = draws.map(draw => {
-        const hasResult = Boolean(draw.lastHour);
-        const lastAnimal = getAnimalByNum(draw.lastNum);
-        const projection = computeStatisticalProjection(draw.key, draw.lastNum, draw.nextHour, draw.history);
-        const unlocked = isProjectionUnlocked(draw.key, draw.drawId);
+        const sortedHistory = recomputeHistoryHits(draw);
+        const hasResult = Boolean(draw.lastHour) || sortedHistory.length > 0;
+        const latestEntry = sortedHistory.length > 0 ? sortedHistory[sortedHistory.length - 1] : null;
+        const effectiveLastHour = draw.lastHour || (latestEntry ? latestEntry.hour : '');
+        const effectiveLastNum = draw.lastHour ? draw.lastNum : (latestEntry ? latestEntry.num : '0');
+        const effectiveNextHour = effectiveLastHour ? getNextHourLabel(effectiveLastHour) : DRAW_HOURS[0];
+
+        const lastAnimal = getAnimalByNum(effectiveLastNum);
+        const projection = computeStatisticalProjection(draw.key, effectiveLastNum, effectiveNextHour, sortedHistory);
+        const unlocked = isProjectionUnlocked(draw.key, `${getTodayStamp()}_${effectiveNextHour}`);
         const drawHits = Array.isArray(draw.hits) ? draw.hits : [];
+        const hitHoursSet = new Set(drawHits.map(h => normalizeHourLabel(h.hour)));
 
         const isAmber = draw.accent === 'amber';
         const borderAccent = isAmber ? 'border-amber-500/40' : 'border-emerald-500/40';
@@ -862,14 +984,23 @@
           ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-amber-500/25'
           : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-emerald-500/25';
 
-        const historyBadges = (draw.history || []).slice(-4).map(h => {
+        const historyBadges = sortedHistory.map(h => {
           const item = getAnimalByNum(h.num);
+          const isHitItem = Boolean(h.isHit || hitHoursSet.has(normalizeHourLabel(h.hour)));
+          const badgeClasses = isHitItem
+            ? 'bg-emerald-950/80 border-emerald-500 text-emerald-200 ring-1 ring-emerald-400/50 shadow-sm shadow-emerald-500/20'
+            : 'bg-obsidian border-slate-800 text-slate-300';
+          const hourClasses = isHitItem ? 'text-emerald-300 font-bold' : 'text-slate-400';
+          const numClasses = isHitItem ? 'text-emerald-300 font-extrabold' : 'text-white font-bold';
+          const nameClasses = isHitItem ? 'text-emerald-100 font-semibold' : 'text-slate-300';
+
           return `
-            <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-obsidian border border-slate-800 text-[11px]">
-              <span class="font-mono text-slate-400">${h.hour}:</span>
+            <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[11px] transition ${badgeClasses}">
+              <span class="font-mono ${hourClasses}">${h.hour}:</span>
               <span>${item.emoji}</span>
-              <span class="font-mono font-bold text-white">${item.num}</span>
-              <span class="text-slate-300 hidden sm:inline">${item.name}</span>
+              <span class="font-mono ${numClasses}">${item.num}</span>
+              <span class="${nameClasses} hidden sm:inline">${item.name}</span>
+              ${isHitItem ? '<span class="px-1 py-0.2 rounded bg-emerald-500/25 text-emerald-300 text-[9px] font-black">✓ ACIERTO</span>' : ''}
             </div>
           `;
         }).join('');
@@ -884,15 +1015,15 @@
                 <span class="text-[10px] font-mono text-emerald-300/80">En Vivo</span>
               </div>
               <div class="flex flex-wrap gap-1.5">
-                ${drawHits.slice(0, 4).map(hit => {
+                ${drawHits.slice(0, 6).map(hit => {
                   const hitItem = getAnimalByNum(hit.num);
                   return `
-                  <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-obsidian/90 border border-emerald-500/40 text-[11px]">
+                  <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-950/80 border border-emerald-500/60 text-[11px]">
                     <span class="font-mono text-emerald-300 font-bold">${hit.hour}</span>
                     ${renderAnimalVisual(hitItem, 'w-5 h-5', 'text-xs')}
-                    <span class="font-mono font-extrabold text-white">${hit.num}</span>
-                    <span class="text-slate-200">${hit.name}</span>
-                    <span class="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 text-[9px] font-bold">${hit.type}</span>
+                    <span class="font-mono font-extrabold text-emerald-200">${hit.num}</span>
+                    <span class="text-emerald-100 font-semibold">${hit.name}</span>
+                    <span class="px-1.5 py-0.2 rounded bg-emerald-500/25 text-emerald-300 text-[9px] font-bold">${hit.type}</span>
                   </div>
                 `;
                 }).join('')}
@@ -908,7 +1039,7 @@
                 <div class="flex items-center gap-1.5">
                   <span class="text-xs">🔓</span>
                   <span class="text-[11px] font-extrabold uppercase tracking-wider ${titleColor}">
-                    Proyección Tendencia • ${draw.nextHour}
+                    Proyección Tendencia • ${effectiveNextHour}
                   </span>
                 </div>
                 <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 font-mono text-[10px] font-extrabold text-emerald-300">
@@ -952,7 +1083,7 @@
             <div class="relative bg-obsidian border border-slate-800 rounded-2xl p-4 overflow-hidden">
               <div class="select-none blur-[6px] opacity-35 pointer-events-none space-y-3" aria-hidden="true">
                 <div class="flex justify-between">
-                  <span class="text-xs font-bold">PROYECCIÓN ESTADÍSTICA ${draw.nextHour}</span>
+                  <span class="text-xs font-bold">PROYECCIÓN ESTADÍSTICA ${effectiveNextHour}</span>
                   <span class="text-xs font-mono">ACTIVA</span>
                 </div>
                 <div class="h-14 bg-slate-800 rounded-xl"></div>
@@ -968,15 +1099,15 @@
                 </div>
                 <div>
                   <h4 class="font-extrabold text-xs sm:text-sm text-white">
-                    Proyección de <span class="${titleColor}">${draw.nextHour}</span> Lista
+                    Proyección de <span class="${titleColor}">${effectiveNextHour}</span> Lista
                   </h4>
                   <p class="text-[11px] text-slate-400 max-w-xs mx-auto mt-0.5">
-                    Cálculo generado para el bloque <strong class="text-slate-200">${draw.nextHour}</strong>. Desbloquea gratis viendo un breve anuncio.
+                    Cálculo generado para el bloque <strong class="text-slate-200">${effectiveNextHour}</strong>. Desbloquea gratis viendo un breve anuncio.
                   </p>
                 </div>
                 <button onclick="openAdUnlockModal('${draw.key}')" class="px-4 py-2.5 rounded-xl font-extrabold text-xs shadow-lg transition flex items-center gap-2 ${ctaBtnStyle}">
                   <span>📺</span>
-                  <span>Ver Anuncio y Desbloquear (${draw.nextHour})</span>
+                  <span>Ver Anuncio y Desbloquear (${effectiveNextHour})</span>
                 </button>
               </div>
             </div>
@@ -989,11 +1120,11 @@
                 ${getSortLogoSVG(draw.key, 'w-12 h-12')}
                 <div>
                   <h2 class="font-black text-base tracking-wide ${titleColor}">${draw.title}</h2>
-                  <p class="text-[11px] text-slate-400">Último sorteo: <strong class="font-mono text-slate-200">${draw.lastHour || 'Esperando sorteo...'}</strong></p>
+                  <p class="text-[11px] text-slate-400">Último sorteo: <strong class="font-mono text-slate-200">${effectiveLastHour || 'Esperando sorteo...'}</strong></p>
                 </div>
               </div>
               <span class="px-2.5 py-1 rounded-full border text-[10px] font-mono font-bold ${badgeStyle}">
-                Sig: ${draw.nextHour}
+                Sig: ${effectiveNextHour}
               </span>
             </div>
 
@@ -1005,7 +1136,7 @@
                     : `<div class="w-16 h-16 rounded-full bg-gradient-to-br from-slate-800 to-slate-950 border border-slate-700 flex items-center justify-center text-4xl shadow-md shrink-0">⏳</div>`}
                   <div>
                     <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                      ${hasResult ? `Resultado Oficial • ${draw.lastHour}` : 'Esperando primer resultado del día'}
+                      ${hasResult ? `Resultado Oficial • ${effectiveLastHour}` : 'Esperando primer resultado del día'}
                     </div>
                     <div class="font-black text-xl sm:text-2xl text-white tracking-tight mt-0.5">
                       ${hasResult
@@ -1019,7 +1150,10 @@
 
               ${historyBadges ? `
                 <div class="space-y-1.5">
-                  <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Secuencia Reciente:</div>
+                  <div class="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    <span>Secuencia Reciente (08:00 AM - 07:00 PM):</span>
+                    <span class="text-emerald-400/90 normal-case font-medium">Verde = Acierto</span>
+                  </div>
                   <div class="flex flex-wrap gap-1.5">${historyBadges}</div>
                 </div>
               ` : ''}
@@ -1041,10 +1175,11 @@
       if (!draw) return;
 
       activeUnlockTargetKey = sorteoKey;
+      const effectiveNextHour = draw.lastHour ? getNextHourLabel(draw.lastHour) : (draw.nextHour || DRAW_HOURS[0]);
 
       if (typeof window.show_10088762 === 'function') {
         try {
-          window.show_10088762('pop').then(() => {
+          window.show_10088762().then(() => {
             completeAdUnlock();
           }).catch(() => {});
         } catch (e) {}
@@ -1058,9 +1193,9 @@
       const countdownEl = document.getElementById('ad-countdown-text');
       const progressBar = document.getElementById('ad-progress-bar');
 
-      badgeEl.textContent = `${draw.title} • Bloque ${draw.nextHour}`;
-      titleEl.textContent = `Desbloquear Proyección ${draw.nextHour}`;
-      targetLabel.textContent = `${draw.title} (${draw.nextHour})`;
+      badgeEl.textContent = `${draw.title} • Bloque ${effectiveNextHour}`;
+      titleEl.textContent = `Desbloquear Proyección ${effectiveNextHour}`;
+      targetLabel.textContent = `${draw.title} (${effectiveNextHour})`;
 
       const totalSeconds = CONFIG_PRODUCCION.webAdDurationSeconds || 5;
       let secondsLeft = totalSeconds;
@@ -1106,10 +1241,11 @@
       const draw = radarState[activeUnlockTargetKey];
       if (!draw) return;
 
-      setProjectionUnlocked(draw.key, draw.drawId);
+      const effectiveNextHour = draw.lastHour ? getNextHourLabel(draw.lastHour) : (draw.nextHour || DRAW_HOURS[0]);
+      setProjectionUnlocked(draw.key, `${getTodayStamp()}_${effectiveNextHour}`);
       closeAdModal();
       renderDrawCards();
-      showToast(`🔓 Proyección de ${draw.title} (${draw.nextHour}) desbloqueada`);
+      showToast(`🔓 Proyección de ${draw.title} (${effectiveNextHour}) desbloqueada`);
     }
 
     function toggleOperatorPanel() {
@@ -1139,7 +1275,7 @@
 
         if (hourSel) {
           hourSel.innerHTML = hourOptions;
-          hourSel.value = draw.nextHour;
+          hourSel.value = draw.lastHour || DRAW_HOURS[0];
         }
         if (numSel) {
           numSel.innerHTML = animalOptions;
@@ -1153,7 +1289,7 @@
 
     async function publishDrawResult(sorteoKey) {
       const prefix = sorteoKey === 'lotto_activo' ? 'la' : 'lg';
-      const newHour = document.getElementById(`op-hour-${prefix}`)?.value;
+      const newHour = normalizeHourLabel(document.getElementById(`op-hour-${prefix}`)?.value);
       const newNum = document.getElementById(`op-num-${prefix}`)?.value;
       if (!newHour || newNum === undefined) return;
 
@@ -1161,14 +1297,20 @@
       const normalizedNewNum = normalizeAnimalNum(newNum);
       const hit = evaluateHitForNewResult(draw, newHour, normalizedNewNum);
 
-      const nextHour = getNextHourLabel(newHour);
+      const updatedList = sortHistoryChronologically([
+        ...(draw.history || []),
+        { hour: newHour, num: normalizedNewNum, isHit: Boolean(hit) }
+      ]);
+      const latestItem = updatedList[updatedList.length - 1] || { hour: newHour, num: normalizedNewNum };
+      const nextHour = getNextHourLabel(latestItem.hour);
       const newDrawId = `${getTodayStamp()}_${nextHour}`;
 
-      draw.lastHour = newHour;
+      draw.history = updatedList;
+      draw.lastHour = latestItem.hour;
       draw.nextHour = nextHour;
-      draw.lastNum = normalizedNewNum;
+      draw.lastNum = latestItem.num;
       draw.drawId = newDrawId;
-      draw.history = [...(draw.history || []), { hour: newHour, num: normalizedNewNum }].slice(-6);
+      recomputeHistoryHits(draw);
 
       await saveRadarState();
       populateOperatorControls();
