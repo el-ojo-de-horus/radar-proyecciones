@@ -104,16 +104,17 @@ async function run() {
   const snap = await docRef.get();
   const todayStamp = getVenezuelaDateStamp();
 
+  // Estado base neutral sin resultados falsos de ejemplo: solo se poblará con datos reales
   const currentData = snap.exists ? snap.data() : {
     lotto_activo: {
       key: 'lotto_activo',
       title: 'LOTTO ACTIVO',
       icon: '🦁',
       accent: 'amber',
-      lastHour: '08:00 AM',
-      nextHour: '09:00 AM',
-      lastNum: '12',
-      drawId: `${todayStamp}_09:00 AM`,
+      lastHour: '',
+      nextHour: DRAW_HOURS[0],
+      lastNum: '0',
+      drawId: `${todayStamp}_${DRAW_HOURS[0]}`,
       history: []
     },
     la_granjita: {
@@ -121,10 +122,10 @@ async function run() {
       title: 'LA GRANJITA',
       icon: '🐔',
       accent: 'emerald',
-      lastHour: '08:00 AM',
-      nextHour: '09:00 AM',
-      lastNum: '35',
-      drawId: `${todayStamp}_09:00 AM`,
+      lastHour: '',
+      nextHour: DRAW_HOURS[0],
+      lastNum: '0',
+      drawId: `${todayStamp}_${DRAW_HOURS[0]}`,
       history: []
     }
   };
