@@ -6,8 +6,8 @@
   <title>👑EL OJO DE HORUS🔥 — Radar Estadístico & Proyecciones</title>
   <!-- SDK oficial de Telegram Mini Apps -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <!-- SDK oficial de Adsgram para monetización en Telegram Mini Apps -->
-  <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
+  <!-- SDK oficial de Monetag (Zona 10088762) -->
+  <script src='//libtl.com/sdk.js' data-zone='10088762' data-sdk='show_10088762'></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -49,7 +49,7 @@
   <!-- Notificaciones Toast -->
   <div id="toast-container" class="fixed bottom-4 right-4 left-4 sm:left-auto z-50 flex flex-col gap-2 max-w-sm ml-auto pointer-events-none"></div>
 
-  <!-- CABECERA COMPACTA (OPTIMIZADA PARA TELEGRAM MINI APP Y GOOGLE SITES) -->
+  <!-- CABECERA COMPACTA -->
   <header class="bg-panel/95 backdrop-blur-md border-b border-slate-800/90 sticky top-0 z-30">
     <div class="max-w-5xl mx-auto px-3 sm:px-5 py-3 flex items-center justify-between gap-2">
       <div class="flex items-center gap-2.5">
@@ -78,12 +78,11 @@
         </div>
       </div>
 
-      <!-- Botón de Panel Operador (Para actualizar resultados en tiempo real) -->
       <div class="flex items-center gap-2">
         <span id="cloud-status-pill" class="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-[10px] font-mono text-emerald-400">
           ● Radar Activo
         </span>
-        <button onclick="syncExternalSourceNow()" title="Intentar sincronizar resultados ahora" class="px-2.5 py-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-xs font-bold text-emerald-300 transition flex items-center gap-1">
+        <button onclick="syncExternalSourceNow()" title="Sincronizar resultados ahora" class="px-2.5 py-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-xs font-bold text-emerald-300 transition flex items-center gap-1">
           <span id="auto-sync-icon">🔄</span>
           <span class="hidden md:inline">Auto-Sync</span>
         </button>
@@ -98,7 +97,7 @@
   <!-- CONTENIDO PRINCIPAL -->
   <main class="flex-1 max-w-5xl w-full mx-auto px-3 sm:px-5 py-4 space-y-5">
 
-    <!-- PANEL COLAPSABLE DE OPERADOR (PARA PUBLICAR EL RESULTADO DE CADA HORA EN TIEMPO REAL) -->
+    <!-- PANEL COLAPSABLE DE OPERADOR -->
     <section id="operator-panel" class="hidden bg-panel border border-amber-500/40 rounded-2xl p-4 space-y-4 shadow-2xl">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
         <div>
@@ -109,11 +108,10 @@
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-        <!-- Control Lotto Activo -->
         <div class="bg-obsidian border border-slate-800 rounded-xl p-3.5 space-y-2.5">
           <div class="flex items-center justify-between">
             <span class="font-extrabold text-amber-400">🦁 LOTTO ACTIVO</span>
-            <span id="op-status-la" class="font-mono text-[10px] text-slate-400">Último: --</span>
+            <span id="op-status-la" class="font-mono text-[10px] text-slate-400">Hora actual: --</span>
           </div>
           <div class="grid grid-cols-2 gap-2">
             <div>
@@ -130,11 +128,10 @@
           </button>
         </div>
 
-        <!-- Control La Granjita -->
         <div class="bg-obsidian border border-slate-800 rounded-xl p-3.5 space-y-2.5">
           <div class="flex items-center justify-between">
             <span class="font-extrabold text-emerald-400">🐔 LA GRANJITA</span>
-            <span id="op-status-lg" class="font-mono text-[10px] text-slate-400">Último: --</span>
+            <span id="op-status-lg" class="font-mono text-[10px] text-slate-400">Hora actual: --</span>
           </div>
           <div class="grid grid-cols-2 gap-2">
             <div>
@@ -153,23 +150,21 @@
       </div>
 
       <div class="flex flex-wrap items-center justify-between gap-2 pt-1 text-[11px] text-slate-400">
-        <span>Nota: Al publicar un nuevo bloque horario, el sistema evalúa si hubo acierto y reinicia el candado de proyección.</span>
+        <span>Nota: Al publicar un nuevo bloque horario, el sistema evalúa aciertos y reinicia el candado de proyección.</span>
         <button onclick="resetAllUnlocksForTest()" class="text-amber-400 hover:underline font-semibold">🔒 Probar reinicio de candados</button>
       </div>
     </section>
 
-    <!-- TARJETAS INDEPENDIENTES POR SORTEO (LOTTO ACTIVO Y LA GRANJITA) -->
+    <!-- TARJETAS INDEPENDIENTES POR SORTEO -->
     <section id="draws-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-5"></section>
 
-    <!-- AVISO LEGAL DE CUMPLIMIENTO (SIN TÉRMINOS DE APUESTAS) -->
+    <!-- AVISO LEGAL -->
     <footer class="text-center text-[11px] text-slate-500 pb-4 px-2 leading-relaxed">
       <strong>Nota Metodológica:</strong> Esta herramienta presenta indicadores estadísticos, frecuencias históricas y modelos de proyección de tendencias basados en resultados públicos. Su contenido es estrictamente informativo y analítico.
     </footer>
   </main>
 
-  <!-- ========================================================================= -->
-  <!-- MODAL MONETIZADO DE DESBLOQUEO POR SORTEO Y HORA (CON ANUNCIO)            -->
-  <!-- ========================================================================= -->
+  <!-- MODAL DE DESBLOQUEO CON ANUNCIO (show_10088762('pop')) -->
   <div id="ad-unlock-modal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
     <div class="bg-panel border border-amber-500/50 rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl relative overflow-hidden">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
@@ -180,7 +175,6 @@
         <button onclick="closeAdModal()" class="text-slate-400 hover:text-white text-lg px-2">✕</button>
       </div>
 
-      <!-- Contenedor del Anuncio Patrocinado (Monetag + Adsgram) -->
       <div id="ad-slot-container" class="bg-obsidian border border-slate-700/80 rounded-xl p-4 text-center space-y-3">
         <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-400 text-[10px] font-bold uppercase tracking-wider">
           <span>📺</span> <span>Espacio Patrocinado • Acceso Gratuito</span>
@@ -190,14 +184,10 @@
           <div class="text-3xl">👑</div>
           <p class="font-extrabold text-sm text-amber-400">Análisis Estadístico Avanzado</p>
           <p class="text-xs text-slate-300 leading-relaxed">
-            Visualiza este breve anuncio patrocinado para liberar el cálculo de tendencia de <strong id="ad-modal-target-label" class="text-white">esta hora</strong> sin costo.
+            Visualiza el anuncio patrocinado para liberar el cálculo de tendencia de <strong id="ad-modal-target-label" class="text-white">esta hora</strong> sin costo.
           </p>
-          <a id="ad-sponsor-link" href="https://uplcm.com/4/12319976" target="_blank" rel="noopener noreferrer" class="inline-block mt-1 px-3.5 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 text-[11px] font-bold transition">
-            🔗 Abrir Enlace Patrocinado
-          </a>
         </div>
 
-        <!-- Barra de progreso del anuncio -->
         <div class="space-y-1.5">
           <div class="flex items-center justify-between text-[11px] font-mono">
             <span class="text-slate-400">Verificando visualización...</span>
@@ -220,13 +210,11 @@
     </div>
   </div>
 
-  <!-- ========================================================================= -->
-  <!-- MOTOR ESTADÍSTICO, ACIERTOS, CATÁLOGO OFICIAL Y PERSISTENCIA EN LA NUBE  -->
-  <!-- ========================================================================= -->
+  <!-- MOTOR ESTADÍSTICO, ACIERTOS, CATÁLOGO OFICIAL Y SINCRONIZACIÓN -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     const CONFIG_PRODUCCION = {
       firebase: {
@@ -237,50 +225,48 @@
         messagingSenderId: "1052108888599",
         appId: "1:1052108888599:web:494b17e28e0f9f097d9a52"
       },
-      monetagDirectLink: "https://uplcm.com/4/12319976",
-      adsgramBlockId: "",
       webAdDurationSeconds: 5
     };
 
     const ANIMALITOS_CATALOG = [
-      { num: '0', name: 'Delfín', emoji: '🐬', sector: 'Agua' },
-      { num: '00', name: 'Ballena', emoji: '🐋', sector: 'Agua' },
-      { num: '1', name: 'Carnero', emoji: '🐏', sector: 'Tierra' },
-      { num: '2', name: 'Toro', emoji: '🐂', sector: 'Tierra' },
-      { num: '3', name: 'Ciempiés', emoji: '🐛', sector: 'Tierra' },
-      { num: '4', name: 'Alacrán', emoji: '🦂', sector: 'Tierra' },
-      { num: '5', name: 'León', emoji: '🦁', sector: 'Selva' },
-      { num: '6', name: 'Rana', emoji: '🐸', sector: 'Agua' },
-      { num: '7', name: 'Perico', emoji: '🦜', sector: 'Aire' },
-      { num: '8', name: 'Ratón', emoji: '🐭', sector: 'Tierra' },
-      { num: '9', name: 'Águila', emoji: '🦅', sector: 'Aire' },
-      { num: '10', name: 'Tigre', emoji: '🐯', sector: 'Selva' },
-      { num: '11', name: 'Gato', emoji: '🐱', sector: 'Doméstico' },
-      { num: '12', name: 'Caballo', emoji: '🐴', sector: 'Granja' },
-      { num: '13', name: 'Mono', emoji: '🐒', sector: 'Selva' },
-      { num: '14', name: 'Paloma', emoji: '🕊️', sector: 'Aire' },
-      { num: '15', name: 'Zorro', emoji: '🦊', sector: 'Selva' },
-      { num: '16', name: 'Oso', emoji: '🐻', sector: 'Selva' },
-      { num: '17', name: 'Pavo', emoji: '🦃', sector: 'Granja' },
-      { num: '18', name: 'Burro', emoji: '🫏', sector: 'Granja' },
-      { num: '19', name: 'Chivo', emoji: '🐐', sector: 'Granja' },
-      { num: '20', name: 'Cochino', emoji: '🐷', sector: 'Granja' },
-      { num: '21', name: 'Gallo', emoji: '🐓', sector: 'Granja' },
-      { num: '22', name: 'Camello', emoji: '🐫', sector: 'Tierra' },
-      { num: '23', name: 'Cebra', emoji: '🦓', sector: 'Selva' },
-      { num: '24', name: 'Iguana', emoji: '🦎', sector: 'Tierra' },
-      { num: '25', name: 'Gallina', emoji: '🐔', sector: 'Granja' },
-      { num: '26', name: 'Vaca', emoji: '🐄', sector: 'Granja' },
-      { num: '27', name: 'Perro', emoji: '🐕', sector: 'Doméstico' },
-      { num: '28', name: 'Zamuro', emoji: '🦅', sector: 'Aire' },
-      { num: '29', name: 'Elefante', emoji: '🐘', sector: 'Selva' },
-      { num: '30', name: 'Caimán', emoji: '🐊', sector: 'Agua' },
-      { num: '31', name: 'Lapa', emoji: '🐹', sector: 'Selva' },
-      { num: '32', name: 'Ardilla', emoji: '🐿️', sector: 'Selva' },
-      { num: '33', name: 'Pescado', emoji: '🐟', sector: 'Agua' },
-      { num: '34', name: 'Venado', emoji: '🦌', sector: 'Selva' },
-      { num: '35', name: 'Jirafa', emoji: '🦒', sector: 'Selva' },
-      { num: '36', name: 'Culebra', emoji: '🐍', sector: 'Tierra' }
+      { num: '00', name: 'BALLENA', emoji: '🐳', sector: 'Agua' },
+      { num: '0', name: 'DELFIN', emoji: '🐬', sector: 'Agua' },
+      { num: '1', name: 'CARNERO', emoji: '🐏', sector: 'Tierra' },
+      { num: '2', name: 'TORO', emoji: '🐃', sector: 'Tierra' },
+      { num: '3', name: 'CIEMPIÉS', emoji: '🐛', sector: 'Tierra' },
+      { num: '4', name: 'ALACRÁN', emoji: '🦂', sector: 'Tierra' },
+      { num: '5', name: 'LEÓN', emoji: '🦁', sector: 'Selva' },
+      { num: '6', name: 'RANA', emoji: '🐸', sector: 'Agua' },
+      { num: '7', name: 'PERICO', emoji: '🦜', sector: 'Aire' },
+      { num: '8', name: 'RATÓN', emoji: '🐭', sector: 'Tierra' },
+      { num: '9', name: 'ÁGUILA', emoji: '🦅', sector: 'Aire' },
+      { num: '10', name: 'TIGRE', emoji: '🐯', sector: 'Selva' },
+      { num: '11', name: 'GATO', emoji: '🐱', sector: 'Doméstico' },
+      { num: '12', name: 'CABALLO', emoji: '🐎', sector: 'Granja' },
+      { num: '13', name: 'MONO', emoji: '🐵', sector: 'Selva' },
+      { num: '14', name: 'PALOMA', emoji: '🕊', sector: 'Aire' },
+      { num: '15', name: 'ZORRO', emoji: '🦊', sector: 'Selva' },
+      { num: '16', name: 'OSO', emoji: '🐻', sector: 'Selva' },
+      { num: '17', name: 'PAVO', emoji: '🦃', sector: 'Granja' },
+      { num: '18', name: 'BURRO', emoji: '🐴', sector: 'Granja' },
+      { num: '19', name: 'CHIVO', emoji: '🐐', sector: 'Granja' },
+      { num: '20', name: 'COCHINO', emoji: '🐷', sector: 'Granja' },
+      { num: '21', name: 'GALLO', emoji: '🐓', sector: 'Granja' },
+      { num: '22', name: 'CAMELLO', emoji: '🐪', sector: 'Tierra' },
+      { num: '23', name: 'CEBRA', emoji: '🦓', sector: 'Selva' },
+      { num: '24', name: 'IGUANA', emoji: '🦎', sector: 'Tierra' },
+      { num: '25', name: 'GALLINA', emoji: '🐔', sector: 'Granja' },
+      { num: '26', name: 'VACA', emoji: '🐮', sector: 'Granja' },
+      { num: '27', name: 'PERRO', emoji: '🐶', sector: 'Doméstico' },
+      { num: '28', name: 'ZAMURO', emoji: '⬛️', sector: 'Aire' },
+      { num: '29', name: 'ELEFANTE', emoji: '🐘', sector: 'Selva' },
+      { num: '30', name: 'CAIMÁN', emoji: '🐊', sector: 'Agua' },
+      { num: '31', name: 'LAPA', emoji: '🦦', sector: 'Selva' },
+      { num: '32', name: 'ARDILLA', emoji: '🐿', sector: 'Selva' },
+      { num: '33', name: 'PESCADO', emoji: '🐟', sector: 'Agua' },
+      { num: '34', name: 'VENADO', emoji: '🦌', sector: 'Selva' },
+      { num: '35', name: 'JIRAFA', emoji: '🦒', sector: 'Selva' },
+      { num: '36', name: 'CULEBRA', emoji: '🐍', sector: 'Tierra' }
     ];
 
     const DRAW_HOURS = [
@@ -289,9 +275,16 @@
       '06:00 PM', '07:00 PM'
     ];
 
+    function normalizeAnimalNum(numStr) {
+      const raw = String(numStr ?? '0').trim();
+      if (raw === '00') return '00';
+      const parsed = parseInt(raw, 10);
+      return Number.isNaN(parsed) ? '0' : String(parsed);
+    }
+
     function getAnimalByNum(numStr) {
-      const normalized = String(numStr ?? '0').trim();
-      return ANIMALITOS_CATALOG.find(a => a.num === normalized) || ANIMALITOS_CATALOG[0];
+      const normalized = normalizeAnimalNum(numStr);
+      return ANIMALITOS_CATALOG.find(a => a.num === normalized) || ANIMALITOS_CATALOG[1];
     }
 
     function getNextHourLabel(currentHour) {
@@ -305,7 +298,7 @@
       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     }
 
-    const LOCAL_STATE_KEY = 'ojo_horus_radar_state_v1';
+    const LOCAL_STATE_KEY = 'ojo_horus_radar_state_v2';
     const memoryUnlocks = {};
 
     function safeGetStorage(key) {
@@ -324,25 +317,6 @@
         }
       } catch (e) {}
       return false;
-    }
-
-    function cleanupStaleUnlocks() {
-      const todayPrefix = `_${getTodayStamp()}_`;
-      Object.keys(memoryUnlocks).forEach(k => {
-        if (!k.includes(todayPrefix)) delete memoryUnlocks[k];
-      });
-      try {
-        if (window.localStorage) {
-          const keysToRemove = [];
-          for (let i = 0; i < window.localStorage.length; i++) {
-            const k = window.localStorage.key(i);
-            if (k && k.startsWith('unlocked_') && !k.includes(todayPrefix)) {
-              keysToRemove.push(k);
-            }
-          }
-          keysToRemove.forEach(k => window.localStorage.removeItem(k));
-        }
-      } catch (e) {}
     }
 
     function getUnlockStorageKey(sorteo, drawId) {
@@ -367,11 +341,11 @@
         title: 'LOTTO ACTIVO',
         icon: '🦁',
         accent: 'amber',
-        lastHour: '08:00 AM',
-        nextHour: '09:00 AM',
-        lastNum: '12',
-        drawId: `${getTodayStamp()}_09:00 AM`,
-        history: [{ hour: '08:00 AM', num: '12' }],
+        lastHour: '',
+        nextHour: DRAW_HOURS[0],
+        lastNum: '0',
+        drawId: `${getTodayStamp()}_${DRAW_HOURS[0]}`,
+        history: [],
         hits: []
       },
       la_granjita: {
@@ -379,23 +353,14 @@
         title: 'LA GRANJITA',
         icon: '🐔',
         accent: 'emerald',
-        lastHour: '08:00 AM',
-        nextHour: '09:00 AM',
-        lastNum: '35',
-        drawId: `${getTodayStamp()}_09:00 AM`,
-        history: [{ hour: '08:00 AM', num: '35' }],
+        lastHour: '',
+        nextHour: DRAW_HOURS[0],
+        lastNum: '0',
+        drawId: `${getTodayStamp()}_${DRAW_HOURS[0]}`,
+        history: [],
         hits: []
       }
     };
-
-    function appendUniqueHistory(existingHistory, entry) {
-      const list = Array.isArray(existingHistory) ? [...existingHistory] : [];
-      const last = list[list.length - 1];
-      if (!last || last.hour !== entry.hour || String(last.num) !== String(entry.num)) {
-        list.push({ hour: entry.hour, num: String(entry.num) });
-      }
-      return list.slice(-6);
-    }
 
     function getTerminalDigit(numStr) {
       if (numStr === '00') return 0;
@@ -443,7 +408,7 @@
 
     function computeStatisticalProjection(sorteoKey, lastNum, nextHour, history = []) {
       const lastItem = getAnimalByNum(lastNum);
-      const recentNums = (history || []).map(h => String(h.num));
+      const recentNums = (history || []).map(h => normalizeAnimalNum(h.num));
       if (!recentNums.includes(lastItem.num)) recentNums.push(lastItem.num);
       const excludeSet = new Set(recentNums.slice(-3));
 
@@ -499,7 +464,7 @@
         const gapCandidate = ANIMALITOS_CATALOG.find(
           a => !presentNums.has(a.num) && !excludeSet.has(a.num) && getTerminalDigit(a.num) === base
         ) || ANIMALITOS_CATALOG.find(a => !presentNums.has(a.num) && !excludeSet.has(a.num));
-        backup2 = gapCandidate || ANIMALITOS_CATALOG[13];
+        backup2 = gapCandidate || ANIMALITOS_CATALOG[14];
       }
 
       const ruptureLabel = isTerminalSaturated
@@ -515,11 +480,9 @@
       };
     }
 
-    // =========================================================================
-    // MOTOR DE VERIFICACIÓN Y REGISTRO AUTOMÁTICO DE ACIERTOS
-    // =========================================================================
     function evaluateHitForNewResult(draw, incomingHour, incomingNum) {
-      const normalizedNum = String(incomingNum).trim();
+      if (!draw.lastHour) return null;
+      const normalizedNum = normalizeAnimalNum(incomingNum);
       const prevProjection = computeStatisticalProjection(
         draw.key,
         draw.lastNum,
@@ -528,10 +491,10 @@
       );
 
       let hitType = null;
-      if (prevProjection.primary && String(prevProjection.primary.num) === normalizedNum) {
+      if (prevProjection.primary && prevProjection.primary.num === normalizedNum) {
         hitType = 'PRINCIPAL';
       } else if (Array.isArray(prevProjection.backups)) {
-        const matchedIdx = prevProjection.backups.findIndex(b => b && String(b.num) === normalizedNum);
+        const matchedIdx = prevProjection.backups.findIndex(b => b && b.num === normalizedNum);
         if (matchedIdx !== -1) {
           hitType = `RESPALDO #${matchedIdx + 1}`;
         }
@@ -564,38 +527,58 @@
 
     function parseResultsFromHtmlText(htmlText) {
       if (!htmlText || typeof htmlText !== 'string') return null;
+      const scriptTag = '<' + 'script[\\s\\S]*?<\\/' + 'script>';
+      const styleTag = '<' + 'style[\\s\\S]*?<\\/' + 'style>';
+      const anyTag = '<[^>]+>';
       const cleanText = htmlText
-        .replace(/<script[\s\S]*?<\/script>/gi, ' ')
-        .replace(/<style[\s\S]*?<\/style>/gi, ' ')
-        .replace(/<[^>]+>/g, ' ')
+        .replace(new RegExp(scriptTag, 'gi'), ' ')
+        .replace(new RegExp(styleTag, 'gi'), ' ')
+        .replace(new RegExp(anyTag, 'g'), ' ')
         .replace(/\s+/g, ' ')
         .trim();
 
       const validNums = new Set(ANIMALITOS_CATALOG.map(a => a.num));
-      const hourRegex = /\b(0?[8-9]|1[0-2]):00\s*(AM|PM)\b/gi;
+      const drawEntryRegex = /\b(00|[0-9]|1[0-9]|2[0-9]|3[0-6])\s+([A-Za-zÁÉÍÓÚáéíóúñÑ]+(?:\s+[A-Za-zÁÉÍÓÚáéíóúñÑ]+){0,2})\s+((?:0?[1-9]|1[0-2]):[0-5][0-9]\s*(?:AM|PM))\b/gi;
 
-      function extractSectionPairs(sectionName) {
-        const idx = cleanText.toLowerCase().indexOf(sectionName.toLowerCase());
-        if (idx === -1) return [];
-        const slice = cleanText.slice(idx, idx + 1400);
-        const matches = [...slice.matchAll(hourRegex)];
+      function parseSliceMatches(sliceText) {
         const pairs = [];
-
-        for (const m of matches) {
-          const rawHour = m[0].toUpperCase().replace(/\s+/g, ' ').trim();
+        const seenHours = new Set();
+        for (const m of sliceText.matchAll(drawEntryRegex)) {
+          const rawNum = normalizeAnimalNum(m[1]);
+          const rawHour = m[3].toUpperCase().replace(/\s+/g, ' ').trim();
           const normalizedHour = rawHour.length === 7 ? `0${rawHour}` : rawHour;
-          const pos = m.index || 0;
-          const windowBefore = slice.slice(Math.max(0, pos - 28), pos);
-          const numMatch = windowBefore.match(/\b(00|[0-9]|1[0-9]|2[0-9]|3[0-6])\b(?=\s+[A-Za-zÁÉÍÓÚáéíóúñÑ]+\s*$)/);
-          if (numMatch && validNums.has(numMatch[1])) {
-            pairs.push({ hour: normalizedHour, num: numMatch[1] });
+          if (validNums.has(rawNum) && !seenHours.has(normalizedHour)) {
+            seenHours.add(normalizedHour);
+            pairs.push({ hour: normalizedHour, num: rawNum });
           }
         }
         return pairs;
       }
 
-      const laPairs = extractSectionPairs('Lotto Activo');
-      const lgPairs = extractSectionPairs('La Granjita');
+      const lowerText = cleanText.toLowerCase();
+      const lgIdx = lowerText.indexOf('resultados la granjita');
+
+      // Bloque Lotto Activo: desde 'resultados lotto activo' (o inicio de tabla) hasta justo antes de 'resultados la granjita'
+      let laSlice = '';
+      const laStart = lowerText.indexOf('resultados lotto activo');
+      if (laStart !== -1) {
+        laSlice = lgIdx > laStart ? cleanText.slice(laStart, lgIdx) : cleanText.slice(laStart, laStart + 2500);
+      } else if (lgIdx !== -1) {
+        laSlice = cleanText.slice(Math.max(0, lgIdx - 2500), lgIdx);
+      }
+
+      // Bloque La Granjita: desde 'resultados la granjita' hasta el siguiente título 'Resultados ...'
+      let lgSlice = '';
+      if (lgIdx !== -1) {
+        const afterLg = cleanText.slice(lgIdx);
+        const nextSectionMatch = afterLg.slice('resultados la granjita'.length).search(/\bResultados\s+[A-Za-z]/i);
+        lgSlice = nextSectionMatch !== -1
+          ? afterLg.slice(0, 'resultados la granjita'.length + nextSectionMatch)
+          : afterLg.slice(0, 2500);
+      }
+
+      const laPairs = parseSliceMatches(laSlice);
+      const lgPairs = parseSliceMatches(lgSlice);
 
       if (!laPairs.length && !lgPairs.length) return null;
       return { laPairs, lgPairs };
@@ -607,74 +590,95 @@
       const iconEl = document.getElementById('auto-sync-icon');
       if (iconEl) iconEl.classList.add('animate-spin');
 
-      const targetUrl = 'https://www.loteriadehoy.com/animalitos/resultados/';
-      const proxyCandidates = [
-        `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`,
-        `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`
-      ];
-
-      let parsedData = null;
-      for (const endpoint of proxyCandidates) {
-        try {
-          const resp = await fetch(endpoint, { cache: 'no-store' });
-          if (resp.ok) {
-            const html = await resp.text();
-            parsedData = parseResultsFromHtmlText(html);
-            if (parsedData) break;
-          }
-        } catch (e) {}
-      }
-
-      let updatedAny = false;
-      const newHits = [];
-
-      if (parsedData) {
-        if (parsedData.laPairs.length > 0) {
-          const latest = parsedData.laPairs[parsedData.laPairs.length - 1];
-          if (latest.hour !== radarState.lotto_activo.lastHour || latest.num !== radarState.lotto_activo.lastNum) {
-            const hit = evaluateHitForNewResult(radarState.lotto_activo, latest.hour, latest.num);
-            if (hit) newHits.push(`🎯 ¡Acierto en LOTTO ACTIVO (${hit.hour}): ${hit.num} ${hit.name} [${hit.type}]!`);
-
-            radarState.lotto_activo.lastHour = latest.hour;
-            radarState.lotto_activo.nextHour = getNextHourLabel(latest.hour);
-            radarState.lotto_activo.lastNum = latest.num;
-            radarState.lotto_activo.drawId = `${getTodayStamp()}_${radarState.lotto_activo.nextHour}`;
-            radarState.lotto_activo.history = appendUniqueHistory(radarState.lotto_activo.history, latest);
-            updatedAny = true;
+      try {
+        if (isCloudReady && cloudDocRef) {
+          const snap = await getDoc(cloudDocRef);
+          if (snap.exists()) {
+            const data = snap.data();
+            if (data && data.lotto_activo && data.la_granjita && data.lotto_activo.lastHour && data.la_granjita.lastHour) {
+              radarState.lotto_activo = { ...radarState.lotto_activo, ...data.lotto_activo, hits: data.lotto_activo.hits || radarState.lotto_activo.hits || [] };
+              radarState.la_granjita = { ...radarState.la_granjita, ...data.la_granjita, hits: data.la_granjita.hits || radarState.la_granjita.hits || [] };
+              safeSetStorage(LOCAL_STATE_KEY, JSON.stringify(radarState));
+              renderAll();
+              if (!silent) showToast('☁️ Resultados sincronizados en vivo');
+              return;
+            }
           }
         }
-        if (parsedData.lgPairs.length > 0) {
-          const latest = parsedData.lgPairs[parsedData.lgPairs.length - 1];
-          if (latest.hour !== radarState.la_granjita.lastHour || latest.num !== radarState.la_granjita.lastNum) {
-            const hit = evaluateHitForNewResult(radarState.la_granjita, latest.hour, latest.num);
-            if (hit) newHits.push(`🎯 ¡Acierto en LA GRANJITA (${hit.hour}): ${hit.num} ${hit.name} [${hit.type}]!`);
 
-            radarState.la_granjita.lastHour = latest.hour;
-            radarState.la_granjita.nextHour = getNextHourLabel(latest.hour);
-            radarState.la_granjita.lastNum = latest.num;
-            radarState.la_granjita.drawId = `${getTodayStamp()}_${radarState.la_granjita.nextHour}`;
-            radarState.la_granjita.history = appendUniqueHistory(radarState.la_granjita.history, latest);
-            updatedAny = true;
+        const targetUrl = 'https://lotoven.com/animalitos/';
+        const proxyCandidates = [
+          `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`,
+          `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`
+        ];
+
+        let parsedData = null;
+        for (const endpoint of proxyCandidates) {
+          try {
+            const resp = await fetch(endpoint, { cache: 'no-store' });
+            if (resp.ok) {
+              const html = await resp.text();
+              parsedData = parseResultsFromHtmlText(html);
+              if (parsedData) break;
+            }
+          } catch (e) {}
+        }
+
+        let updatedAny = false;
+        const newHits = [];
+
+        if (parsedData) {
+          if (parsedData.laPairs.length > 0) {
+            const latest = parsedData.laPairs[parsedData.laPairs.length - 1];
+            if (latest.hour !== radarState.lotto_activo.lastHour || latest.num !== radarState.lotto_activo.lastNum) {
+              const hit = evaluateHitForNewResult(radarState.lotto_activo, latest.hour, latest.num);
+              if (hit) newHits.push(`🎯 ¡Acierto en LOTTO ACTIVO (${hit.hour}): ${hit.num} ${hit.name} [${hit.type}]!`);
+
+              radarState.lotto_activo.lastHour = latest.hour;
+              radarState.lotto_activo.nextHour = getNextHourLabel(latest.hour);
+              radarState.lotto_activo.lastNum = latest.num;
+              radarState.lotto_activo.drawId = `${getTodayStamp()}_${radarState.lotto_activo.nextHour}`;
+              radarState.lotto_activo.history = parsedData.laPairs.slice(-6);
+              updatedAny = true;
+            }
+          }
+          if (parsedData.lgPairs.length > 0) {
+            const latest = parsedData.lgPairs[parsedData.lgPairs.length - 1];
+            if (latest.hour !== radarState.la_granjita.lastHour || latest.num !== radarState.la_granjita.lastNum) {
+              const hit = evaluateHitForNewResult(radarState.la_granjita, latest.hour, latest.num);
+              if (hit) newHits.push(`🎯 ¡Acierto en LA GRANJITA (${hit.hour}): ${hit.num} ${hit.name} [${hit.type}]!`);
+
+              radarState.la_granjita.lastHour = latest.hour;
+              radarState.la_granjita.nextHour = getNextHourLabel(latest.hour);
+              radarState.la_granjita.lastNum = latest.num;
+              radarState.la_granjita.drawId = `${getTodayStamp()}_${radarState.la_granjita.nextHour}`;
+              radarState.la_granjita.history = parsedData.lgPairs.slice(-6);
+              updatedAny = true;
+            }
           }
         }
-      }
 
-      if (updatedAny) {
-        await saveRadarState();
-        renderAll();
-        newHits.forEach(msg => showToast(msg));
-        if (!silent) showToast('🔄 Nuevos resultados detectados y proyectados automáticamente');
-      } else if (!silent) {
-        showToast('📡 Radar verificado y al día');
+        if (updatedAny) {
+          await saveRadarState();
+          renderAll();
+          newHits.forEach(msg => showToast(msg));
+          if (!silent) showToast('🔄 Nuevos resultados detectados y proyectados');
+        } else if (!silent) {
+          renderAll();
+          showToast('📡 Radar verificado y al día');
+        }
+      } catch (e) {
+        if (!silent) {
+          renderAll();
+          showToast('📡 Radar operando en modo local');
+        }
+      } finally {
+        if (iconEl) iconEl.classList.remove('animate-spin');
+        isSyncingExternal = false;
       }
-
-      if (iconEl) iconEl.classList.remove('animate-spin');
-      isSyncingExternal = false;
     }
 
     async function initCloudSync() {
-      cleanupStaleUnlocks();
-
       const savedLocal = safeGetStorage(LOCAL_STATE_KEY);
       if (savedLocal) {
         try {
@@ -716,8 +720,14 @@
             if (snap.exists()) {
               const data = snap.data();
               if (data && data.lotto_activo && data.la_granjita) {
-                radarState.lotto_activo = { ...radarState.lotto_activo, ...data.lotto_activo, hits: data.lotto_activo.hits || [] };
-                radarState.la_granjita = { ...radarState.la_granjita, ...data.la_granjita, hits: data.la_granjita.hits || [] };
+                if (data.lotto_activo.lastHour && data.lotto_activo.lastHour !== radarState.lotto_activo.lastHour) {
+                  evaluateHitForNewResult(radarState.lotto_activo, data.lotto_activo.lastHour, data.lotto_activo.lastNum);
+                }
+                if (data.la_granjita.lastHour && data.la_granjita.lastHour !== radarState.la_granjita.lastHour) {
+                  evaluateHitForNewResult(radarState.la_granjita, data.la_granjita.lastHour, data.la_granjita.lastNum);
+                }
+                radarState.lotto_activo = { ...radarState.lotto_activo, ...data.lotto_activo, hits: data.lotto_activo.hits || radarState.lotto_activo.hits || [] };
+                radarState.la_granjita = { ...radarState.la_granjita, ...data.la_granjita, hits: data.la_granjita.hits || radarState.la_granjita.hits || [] };
                 safeSetStorage(LOCAL_STATE_KEY, JSON.stringify(radarState));
                 updateCloudBadge('☁️ En Vivo (Sincronizado)');
                 renderAll();
@@ -753,9 +763,6 @@
       if (el) el.textContent = text;
     }
 
-    // =========================================================================
-    // RENDERIZADO DE TARJETAS INDEPENDIENTES POR SORTEO Y SECCIÓN DE ACIERTOS
-    // =========================================================================
     function renderDrawCards() {
       const container = document.getElementById('draws-grid');
       if (!container) return;
@@ -763,10 +770,11 @@
       const draws = [radarState.lotto_activo, radarState.la_granjita];
 
       container.innerHTML = draws.map(draw => {
+        const hasResult = Boolean(draw.lastHour);
         const lastAnimal = getAnimalByNum(draw.lastNum);
         const projection = computeStatisticalProjection(draw.key, draw.lastNum, draw.nextHour, draw.history);
         const unlocked = isProjectionUnlocked(draw.key, draw.drawId);
-        const hitsList = Array.isArray(draw.hits) ? draw.hits : [];
+        const drawHits = Array.isArray(draw.hits) ? draw.hits : [];
 
         const isAmber = draw.accent === 'amber';
         const borderAccent = isAmber ? 'border-amber-500/40' : 'border-emerald-500/40';
@@ -791,31 +799,25 @@
           `;
         }).join('');
 
-        const hitsSectionHTML = hitsList.length > 0
+        const hitsSectionHTML = drawHits.length > 0
           ? `
-            <div class="bg-emerald-950/25 border border-emerald-500/35 rounded-2xl p-3 space-y-2">
+            <div class="bg-emerald-950/30 border border-emerald-500/35 rounded-xl p-3 space-y-2">
               <div class="flex items-center justify-between">
                 <span class="text-[10px] font-extrabold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
-                  <span>🎯</span>
-                  <span>Aciertos de Proyección Registrados</span>
+                  <span>🎯</span> <span>Aciertos Verificados (${drawHits.length})</span>
                 </span>
-                <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 font-mono text-[10px] font-extrabold text-emerald-300">
-                  ${hitsList.length} ${hitsList.length === 1 ? 'ACIERTO' : 'ACIERTOS'}
-                </span>
+                <span class="text-[10px] font-mono text-emerald-300/80">En Vivo</span>
               </div>
               <div class="flex flex-wrap gap-1.5">
-                ${hitsList.map(hit => {
-                  const item = getAnimalByNum(hit.num);
-                  return `
-                    <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-obsidian/90 border border-emerald-500/30 text-[11px]">
-                      <span class="font-mono text-emerald-300 font-bold">${hit.hour}</span>
-                      <span>${item.emoji}</span>
-                      <span class="font-mono font-extrabold text-white">#${item.num}</span>
-                      <span class="text-slate-200 font-semibold">${item.name}</span>
-                      <span class="px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-300 font-mono text-[9px] font-bold">${hit.type}</span>
-                    </div>
-                  `;
-                }).join('')}
+                ${drawHits.slice(0, 4).map(hit => `
+                  <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-obsidian/90 border border-emerald-500/40 text-[11px]">
+                    <span class="font-mono text-emerald-300 font-bold">${hit.hour}</span>
+                    <span>${hit.emoji}</span>
+                    <span class="font-mono font-extrabold text-white">${hit.num}</span>
+                    <span class="text-slate-200">${hit.name}</span>
+                    <span class="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 text-[9px] font-bold">${hit.type}</span>
+                  </div>
+                `).join('')}
               </div>
             </div>
           `
@@ -893,7 +895,7 @@
                     Proyección de <span class="${titleColor}">${draw.nextHour}</span> Lista
                   </h4>
                   <p class="text-[11px] text-slate-400 max-w-xs mx-auto mt-0.5">
-                    Cálculo generado tras el resultado <strong class="text-slate-200">${lastAnimal.num} (${lastAnimal.name})</strong>. Desbloquea gratis viendo un breve anuncio.
+                    Cálculo generado para el bloque <strong class="text-slate-200">${draw.nextHour}</strong>. Desbloquea gratis viendo un breve anuncio.
                   </p>
                 </div>
                 <button onclick="openAdUnlockModal('${draw.key}')" class="px-4 py-2.5 rounded-xl font-extrabold text-xs shadow-lg transition flex items-center gap-2 ${ctaBtnStyle}">
@@ -911,39 +913,40 @@
                 <span class="text-2xl">${draw.icon}</span>
                 <div>
                   <h2 class="font-black text-base tracking-wide ${titleColor}">${draw.title}</h2>
-                  <p class="text-[11px] text-slate-400">Último sorteo: <strong class="font-mono text-slate-200">${draw.lastHour}</strong></p>
+                  <p class="text-[11px] text-slate-400">Último sorteo: <strong class="font-mono text-slate-200">${draw.lastHour || 'Esperando sorteo...'}</strong></p>
                 </div>
               </div>
-              <div class="flex items-center gap-1.5">
-                ${hitsList.length > 0 ? `<span class="px-2 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-[10px] font-mono font-extrabold text-emerald-300">🎯 ${hitsList.length}</span>` : ''}
-                <span class="px-2.5 py-1 rounded-full border text-[10px] font-mono font-bold ${badgeStyle}">
-                  Sig: ${draw.nextHour}
-                </span>
-              </div>
+              <span class="px-2.5 py-1 rounded-full border text-[10px] font-mono font-bold ${badgeStyle}">
+                Sig: ${draw.nextHour}
+              </span>
             </div>
 
             <div class="p-4 space-y-4">
               <div class="bg-obsidian/90 border border-slate-800/90 rounded-2xl p-3.5 flex items-center justify-between gap-3">
                 <div class="flex items-center gap-3.5">
                   <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-950 border border-slate-700 flex items-center justify-center text-4xl shadow-md shrink-0">
-                    ${lastAnimal.emoji}
+                    ${hasResult ? lastAnimal.emoji : '⏳'}
                   </div>
                   <div>
                     <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                      Resultado Oficial • ${draw.lastHour}
+                      ${hasResult ? `Resultado Oficial • ${draw.lastHour}` : 'Esperando primer resultado del día'}
                     </div>
                     <div class="font-black text-xl sm:text-2xl text-white tracking-tight mt-0.5">
-                      <span class="font-mono ${titleColor}">${lastAnimal.num}</span> — ${lastAnimal.name}
+                      ${hasResult
+                        ? `<span class="font-mono ${titleColor}">${lastAnimal.num}</span> — ${lastAnimal.name}`
+                        : `<span class="text-slate-400 text-base">Sincronizando...</span>`}
                     </div>
-                    <div class="text-[11px] text-slate-400">Categoría: ${lastAnimal.sector}</div>
+                    <div class="text-[11px] text-slate-400">${hasResult ? `Categoría: ${lastAnimal.sector}` : 'Pulsa Auto-Sync o espera el sorteo oficial'}</div>
                   </div>
                 </div>
               </div>
 
-              <div class="space-y-1.5">
-                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Secuencia Reciente:</div>
-                <div class="flex flex-wrap gap-1.5">${historyBadges}</div>
-              </div>
+              ${historyBadges ? `
+                <div class="space-y-1.5">
+                  <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Secuencia Reciente:</div>
+                  <div class="flex flex-wrap gap-1.5">${historyBadges}</div>
+                </div>
+              ` : ''}
 
               ${hitsSectionHTML}
 
@@ -954,42 +957,21 @@
       }).join('');
     }
 
-    // =========================================================================
-    // REWARDED POPUP AL ENTRAR A LA PÁGINA
-    // =========================================================================
-    function triggerEntryRewardedPopup() {
-      if (typeof window.show_10088762 !== 'function') return;
-
-      try {
-        window.show_10088762('pop').then(() => {
-          // Usuario vio el anuncio hasta el final o cerró en formato intersticial
-        }).catch(() => {
-          // Error al reproducir el anuncio: no interrumpir la experiencia
-        });
-      } catch (e) {}
-    }
-
     let activeUnlockTargetKey = null;
     let adTimerInterval = null;
 
-    async function openAdUnlockModal(sorteoKey) {
+    function openAdUnlockModal(sorteoKey) {
       const draw = radarState[sorteoKey];
       if (!draw) return;
 
       activeUnlockTargetKey = sorteoKey;
 
-      const sponsorLink = document.getElementById('ad-sponsor-link');
-      if (sponsorLink && CONFIG_PRODUCCION.monetagDirectLink) {
-        sponsorLink.href = CONFIG_PRODUCCION.monetagDirectLink;
-      }
-
-      if (CONFIG_PRODUCCION.adsgramBlockId && window.Adsgram) {
+      if (typeof window.show_10088762 === 'function') {
         try {
-          const AdController = window.Adsgram.init({ blockId: String(CONFIG_PRODUCCION.adsgramBlockId) });
-          await AdController.show();
-          completeAdUnlock();
-          return;
-        } catch (adsErr) {}
+          window.show_10088762('pop').then(() => {
+            completeAdUnlock();
+          }).catch(() => {});
+        } catch (e) {}
       }
 
       const modal = document.getElementById('ad-unlock-modal');
@@ -1085,10 +1067,10 @@
         }
         if (numSel) {
           numSel.innerHTML = animalOptions;
-          numSel.value = draw.lastNum;
+          numSel.value = normalizeAnimalNum(draw.lastNum);
         }
         if (statusEl) {
-          statusEl.textContent = `Último: ${draw.lastHour} (${draw.lastNum})`;
+          statusEl.textContent = draw.lastHour ? `Último: ${draw.lastHour} (${draw.lastNum})` : 'Sin sorteo registrado';
         }
       });
     }
@@ -1100,24 +1082,25 @@
       if (!newHour || newNum === undefined) return;
 
       const draw = radarState[sorteoKey];
+      const normalizedNewNum = normalizeAnimalNum(newNum);
+      const hit = evaluateHitForNewResult(draw, newHour, normalizedNewNum);
+
       const nextHour = getNextHourLabel(newHour);
       const newDrawId = `${getTodayStamp()}_${nextHour}`;
 
-      const hit = evaluateHitForNewResult(draw, newHour, String(newNum));
-
       draw.lastHour = newHour;
       draw.nextHour = nextHour;
-      draw.lastNum = String(newNum);
+      draw.lastNum = normalizedNewNum;
       draw.drawId = newDrawId;
-      draw.history = appendUniqueHistory(draw.history, { hour: newHour, num: String(newNum) });
+      draw.history = [...(draw.history || []), { hour: newHour, num: normalizedNewNum }].slice(-6);
 
       await saveRadarState();
       populateOperatorControls();
       renderDrawCards();
 
-      const animal = getAnimalByNum(newNum);
+      const animal = getAnimalByNum(normalizedNewNum);
       if (hit) {
-        showToast(`🎯 ¡ACIERTO en ${draw.title} (${newHour}): ${animal.num} ${animal.name} [${hit.type}]!`);
+        showToast(`🎯 ¡ACIERTO EN ${draw.title} (${hit.hour}): ${hit.num} ${hit.name} [${hit.type}]!`);
       } else {
         showToast(`⚡ ${draw.title}: ${animal.num} (${animal.name}) publicado. Candado reiniciado para ${nextHour}.`);
       }
@@ -1149,7 +1132,7 @@
       setTimeout(() => {
         toast.style.opacity = '0';
         setTimeout(() => toast.remove(), 300);
-      }, 3200);
+      }, 3600);
     }
 
     function updateLiveClock() {
@@ -1191,7 +1174,6 @@
       initCloudSync();
       syncExternalSourceNow(true);
       setInterval(() => syncExternalSourceNow(true), 180000);
-      setTimeout(triggerEntryRewardedPopup, 600);
     });
   </script>
 </body>
