@@ -1,13 +1,11 @@
 const admin = require('firebase-admin');
 
-// 1. Inicializar Firebase Admin desde el Secret FIREBASE_SERVICE_ACCOUNT en GitHub
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
 });
 const db = admin.firestore();
 
-// 2. Catálogo Oficial (0 al 36)
 const VALID_NUMS = new Set([
   '0', '00', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10',
   '11', '12', '13', '14', '15', '16', '17', '18', '19', '20',
@@ -20,6 +18,13 @@ const DRAW_HOURS = [
   '01:00 PM', '02:00 PM', '03:00 PM', '04:00 PM', '05:00 PM',
   '06:00 PM', '07:00 PM'
 ];
+
+function normalizeAnimalNum(numStr) {
+  const raw = String(numStr ?? '0').trim();
+  if (raw === '00') return '00';
+  const parsed = parseInt(raw, 10);
+  return Number.isNaN(parsed) ? '0' : String(parsed);
+}
 
 function getNextHourLabel(currentHour) {
   const idx = DRAW_HOURS.indexOf(currentHour);
@@ -44,26 +49,14 @@ function parseResultsFromHtml(htmlText) {
     .replace(/\s+/g, ' ')
     .trim();
 
-  // En LotoVen cada resultado aparece como: "<numero> <NombreAnimal> <HH:MM AM/PM>"
-  // Ejemplo: "31 Lapa 08:00 AM" o "00 Ballena 06:00 PM"
   const drawEntryRegex = /\b(00|[0-9]|1[0-9]|2[0-9]|3[0-6])\s+([A-Za-zÁÉÍÓÚáéíóúñÑ]+(?:\s+[A-Za-zÁÉÍÓÚáéíóúñÑ]+){0,2})\s+((?:0?[1-9]|1[0-2]):[0-5][0-9]\s*(?:AM|PM))\b/gi;
 
-  function extractPairs(sectionHeading) {
-    const startIdx = cleanText.toLowerCase().indexOf(sectionHeading.toLowerCase());
-    if (startIdx === -1) return [];
-
-    // Cortamos justo antes de la siguiente sección de resultados si existe
-    const afterStart = cleanText.slice(startIdx);
-    const nextSectionMatch = afterStart.slice(sectionHeading.length).search(/\bResultados\s+[A-Za-z]/i);
-    const sectionSlice = nextSectionMatch !== -1
-      ? afterStart.slice(0, sectionHeading.length + nextSectionMatch)
-      : afterStart.slice(0, 2200);
-
+  function parseSliceMatches(sliceText) {
     const pairs = [];
     const seenHours = new Set();
 
-    for (const match of sectionSlice.matchAll(drawEntryRegex)) {
-      const rawNum = match[1].trim();
+    for (const match of sliceText.matchAll(drawEntryRegex)) {
+      const rawNum = normalizeAnimalNum(match[1]);
       const rawHour = match[3].toUpperCase().replace(/\s+/g, ' ').trim();
       const normalizedHour = rawHour.length === 7 ? `0${rawHour}` : rawHour;
 
@@ -76,9 +69,31 @@ function parseResultsFromHtml(htmlText) {
     return pairs;
   }
 
+  const lowerText = cleanText.toLowerCase();
+  const lgIdx = lowerText.indexOf('resultados la granjita');
+
+  // Bloque Lotto Activo: desde 'resultados lotto activo' (o inicio de tabla) hasta justo antes de 'resultados la granjita'
+  let laSlice = '';
+  const laStart = lowerText.indexOf('resultados lotto activo');
+  if (laStart !== -1) {
+    laSlice = lgIdx > laStart ? cleanText.slice(laStart, lgIdx) : cleanText.slice(laStart, laStart + 2500);
+  } else if (lgIdx !== -1) {
+    laSlice = cleanText.slice(Math.max(0, lgIdx - 2500), lgIdx);
+  }
+
+  // Bloque La Granjita: desde 'resultados la granjita' hasta el siguiente título 'Resultados ...'
+  let lgSlice = '';
+  if (lgIdx !== -1) {
+    const afterLg = cleanText.slice(lgIdx);
+    const nextSectionMatch = afterLg.slice('resultados la granjita'.length).search(/\bResultados\s+[A-Za-z]/i);
+    lgSlice = nextSectionMatch !== -1
+      ? afterLg.slice(0, 'resultados la granjita'.length + nextSectionMatch)
+      : afterLg.slice(0, 2500);
+  }
+
   return {
-    laPairs: extractPairs('Resultados Lotto Activo'),
-    lgPairs: extractPairs('Resultados La Granjita')
+    laPairs: parseSliceMatches(laSlice),
+    lgPairs: parseSliceMatches(lgSlice)
   };
 }
 
@@ -96,7 +111,7 @@ async function run() {
 
   const { laPairs, lgPairs } = parseResultsFromHtml(html);
   if (!laPairs.length && !lgPairs.length) {
-    console.log('No se detectaron nuevos bloques horarios aún.');
+    console.log('No se detectaron bloques horarios disponibles aún.');
     return;
   }
 
@@ -104,7 +119,6 @@ async function run() {
   const snap = await docRef.get();
   const todayStamp = getVenezuelaDateStamp();
 
-  // Estado base neutral sin resultados falsos de ejemplo: solo se poblará con datos reales
   const currentData = snap.exists ? snap.data() : {
     lotto_activo: {
       key: 'lotto_activo',
@@ -115,7 +129,8 @@ async function run() {
       nextHour: DRAW_HOURS[0],
       lastNum: '0',
       drawId: `${todayStamp}_${DRAW_HOURS[0]}`,
-      history: []
+      history: [],
+      hits: []
     },
     la_granjita: {
       key: 'la_granjita',
@@ -126,7 +141,8 @@ async function run() {
       nextHour: DRAW_HOURS[0],
       lastNum: '0',
       drawId: `${todayStamp}_${DRAW_HOURS[0]}`,
-      history: []
+      history: [],
+      hits: []
     }
   };
 
