@@ -49,7 +49,7 @@
   <!-- Notificaciones Toast -->
   <div id="toast-container" class="fixed bottom-4 right-4 left-4 sm:left-auto z-50 flex flex-col gap-2 max-w-sm ml-auto pointer-events-none"></div>
 
-  <!-- CABECERA COMPACTA -->
+  <!-- CABECERA COMPACTA (OPTIMIZADA PARA TELEGRAM MINI APP Y GOOGLE SITES) -->
   <header class="bg-panel/95 backdrop-blur-md border-b border-slate-800/90 sticky top-0 z-30">
     <div class="max-w-5xl mx-auto px-3 sm:px-5 py-3 flex items-center justify-between gap-2">
       <div class="flex items-center gap-2.5">
@@ -70,19 +70,23 @@
             <h1 class="font-extrabold text-sm sm:text-base tracking-tight text-amber-400">👑EL OJO DE HORUS🔥</h1>
             <span class="px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[10px] font-bold text-emerald-400">EN VIVO</span>
           </div>
-          <p class="text-[11px] text-slate-400 flex items-center gap-2">
-            <span>Monitor Estadístico de Tendencias</span>
-            <span>•</span>
-            <span id="live-clock" class="font-mono text-slate-300">--:--:--</span>
-          </p>
+          <div class="flex items-center gap-2 text-[11px] text-slate-400">
+            <span class="hidden sm:inline">Monitor Estadístico de Tendencias</span>
+            <span class="hidden sm:inline">•</span>
+            <div class="flex flex-col leading-tight">
+              <span id="live-clock" class="font-mono text-slate-200 font-semibold">--:--:--</span>
+              <span id="live-date" class="font-mono text-amber-300 text-[10px]">--/--/----</span>
+            </div>
+          </div>
         </div>
       </div>
 
+      <!-- Botón de Panel Operador (Para actualizar resultados en tiempo real) -->
       <div class="flex items-center gap-2">
         <span id="cloud-status-pill" class="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-[10px] font-mono text-emerald-400">
           ● Radar Activo
         </span>
-        <button onclick="syncExternalSourceNow()" title="Sincronizar resultados ahora" class="px-2.5 py-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-xs font-bold text-emerald-300 transition flex items-center gap-1">
+        <button onclick="syncExternalSourceNow()" title="Intentar sincronizar resultados ahora" class="px-2.5 py-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-xs font-bold text-emerald-300 transition flex items-center gap-1">
           <span id="auto-sync-icon">🔄</span>
           <span class="hidden md:inline">Auto-Sync</span>
         </button>
@@ -97,7 +101,7 @@
   <!-- CONTENIDO PRINCIPAL -->
   <main class="flex-1 max-w-5xl w-full mx-auto px-3 sm:px-5 py-4 space-y-5">
 
-    <!-- PANEL COLAPSABLE DE OPERADOR -->
+    <!-- PANEL COLAPSABLE DE OPERADOR (PARA PUBLICAR EL RESULTADO DE CADA HORA EN TIEMPO REAL) -->
     <section id="operator-panel" class="hidden bg-panel border border-amber-500/40 rounded-2xl p-4 space-y-4 shadow-2xl">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
         <div>
@@ -108,6 +112,7 @@
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+        <!-- Control Lotto Activo -->
         <div class="bg-obsidian border border-slate-800 rounded-xl p-3.5 space-y-2.5">
           <div class="flex items-center justify-between">
             <span class="font-extrabold text-amber-400">🦁 LOTTO ACTIVO</span>
@@ -128,6 +133,7 @@
           </button>
         </div>
 
+        <!-- Control La Granjita -->
         <div class="bg-obsidian border border-slate-800 rounded-xl p-3.5 space-y-2.5">
           <div class="flex items-center justify-between">
             <span class="font-extrabold text-emerald-400">🐔 LA GRANJITA</span>
@@ -150,21 +156,21 @@
       </div>
 
       <div class="flex flex-wrap items-center justify-between gap-2 pt-1 text-[11px] text-slate-400">
-        <span>Nota: Al publicar un nuevo bloque horario, el sistema evalúa aciertos y reinicia el candado de proyección.</span>
+        <span>Nota: Al publicar un nuevo bloque horario, el candado de proyección se reinicia automáticamente para todos los usuarios.</span>
         <button onclick="resetAllUnlocksForTest()" class="text-amber-400 hover:underline font-semibold">🔒 Probar reinicio de candados</button>
       </div>
     </section>
 
-    <!-- TARJETAS INDEPENDIENTES POR SORTEO -->
+    <!-- TARJETAS INDEPENDIENTES POR SORTEO (LOTTO ACTIVO Y LA GRANJITA) -->
     <section id="draws-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-5"></section>
 
-    <!-- AVISO LEGAL -->
+    <!-- AVISO LEGAL DE CUMPLIMIENTO (SIN TÉRMINOS DE APUESTAS) -->
     <footer class="text-center text-[11px] text-slate-500 pb-4 px-2 leading-relaxed">
       <strong>Nota Metodológica:</strong> Esta herramienta presenta indicadores estadísticos, frecuencias históricas y modelos de proyección de tendencias basados en resultados públicos. Su contenido es estrictamente informativo y analítico.
     </footer>
   </main>
 
-  <!-- MODAL DE DESBLOQUEO CON ANUNCIO (show_10088762()) -->
+  <!-- MODAL MONETIZADO DE DESBLOQUEO POR SORTEO Y HORA -->
   <div id="ad-unlock-modal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
     <div class="bg-panel border border-amber-500/50 rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl relative overflow-hidden">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
@@ -184,7 +190,7 @@
           <div class="text-3xl">👑</div>
           <p class="font-extrabold text-sm text-amber-400">Análisis Estadístico Avanzado</p>
           <p class="text-xs text-slate-300 leading-relaxed">
-            Visualiza el anuncio patrocinado para liberar el cálculo de tendencia de <strong id="ad-modal-target-label" class="text-white">esta hora</strong> sin costo.
+            Visualiza este breve anuncio patrocinado para liberar el cálculo de tendencia de <strong id="ad-modal-target-label" class="text-white">esta hora</strong> sin costo.
           </p>
         </div>
 
@@ -270,21 +276,25 @@
     ];
 
     window.handleAnimalImgError = function(imgEl, code) {
-      const step = parseInt(imgEl.dataset.fallbackStep || '0', 10);
-      if (step === 0) {
-        imgEl.dataset.fallbackStep = '1';
-        imgEl.src = `animalitos/${code}.png`;
-      } else if (step === 1) {
-        imgEl.dataset.fallbackStep = '2';
-        imgEl.src = `animalitos/animalitos/${code}.jpg`;
-      } else if (step === 2) {
-        imgEl.dataset.fallbackStep = '3';
-        imgEl.src = `animalitos/${code}.jpg`;
-      } else {
-        imgEl.style.display = 'none';
-        if (imgEl.nextElementSibling) {
-          imgEl.nextElementSibling.style.display = 'flex';
+      try {
+        const step = parseInt(imgEl.dataset.fallbackStep || '0', 10);
+        if (step === 0) {
+          imgEl.dataset.fallbackStep = '1';
+          imgEl.src = `animalitos/${code}.png`;
+        } else if (step === 1) {
+          imgEl.dataset.fallbackStep = '2';
+          imgEl.src = `animalitos/animalitos/${code}.jpg`;
+        } else if (step === 2) {
+          imgEl.dataset.fallbackStep = '3';
+          imgEl.src = `animalitos/${code}.jpg`;
+        } else {
+          imgEl.style.display = 'none';
+          if (imgEl.nextElementSibling) {
+            imgEl.nextElementSibling.style.display = 'flex';
+          }
         }
+      } catch (e) {
+        imgEl.style.display = 'none';
       }
     };
 
@@ -325,6 +335,13 @@
       return idx === -1 ? 999 : idx;
     }
 
+    function normalizeAnimalNum(numStr) {
+      const raw = String(numStr ?? '0').trim();
+      if (raw === '00') return '00';
+      const parsed = parseInt(raw, 10);
+      return Number.isNaN(parsed) ? '0' : String(parsed);
+    }
+
     function sortHistoryChronologically(historyList = []) {
       const mapByHour = new Map();
       (historyList || []).forEach(entry => {
@@ -342,13 +359,6 @@
       );
     }
 
-    function normalizeAnimalNum(numStr) {
-      const raw = String(numStr ?? '0').trim();
-      if (raw === '00') return '00';
-      const parsed = parseInt(raw, 10);
-      return Number.isNaN(parsed) ? '0' : String(parsed);
-    }
-
     function getAnimalByNum(numStr) {
       const normalized = normalizeAnimalNum(numStr);
       return ANIMALITOS_CATALOG.find(a => a.num === normalized) || ANIMALITOS_CATALOG[1];
@@ -361,15 +371,14 @@
       return DRAW_HOURS[idx + 1];
     }
 
-    function getTodayStamp() {
-      const now = new Date();
-      const veTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/Caracas' }));
-      return `${veTime.getFullYear()}-${String(veTime.getMonth() + 1).padStart(2, '0')}-${String(veTime.getDate()).padStart(2, '0')}`;
-    }
-
     function getVenezuelaDateObj() {
       const now = new Date();
       return new Date(now.toLocaleString('en-US', { timeZone: 'America/Caracas' }));
+    }
+
+    function getTodayStamp() {
+      const veTime = getVenezuelaDateObj();
+      return `${veTime.getFullYear()}-${String(veTime.getMonth() + 1).padStart(2, '0')}-${String(veTime.getDate()).padStart(2, '0')}`;
     }
 
     const LOCAL_STATE_KEY = 'ojo_horus_radar_state_v3';
@@ -1354,10 +1363,25 @@
     }
 
     function updateLiveClock() {
-      const el = document.getElementById('live-clock');
-      if (!el) return;
+      const clockEl = document.getElementById('live-clock');
+      const dateEl = document.getElementById('live-date');
       const now = new Date();
-      el.textContent = now.toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      if (dateEl) {
+        dateEl.textContent = now.toLocaleDateString('es-VE', {
+          timeZone: 'America/Caracas',
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        });
+      }
+      if (clockEl) {
+        clockEl.textContent = now.toLocaleTimeString('es-VE', {
+          timeZone: 'America/Caracas',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        });
+      }
     }
 
     function renderAll() {
