@@ -271,6 +271,9 @@
       const step = parseInt(imgEl.dataset.fallbackStep || '0', 10);
       if (step === 0) {
         imgEl.dataset.fallbackStep = '1';
+        imgEl.src = `animalitos/${code}.png`;
+      } else if (step === 1) {
+        imgEl.dataset.fallbackStep = '2';
         imgEl.src = `animalitos/${code}.jpg`;
       } else {
         imgEl.style.display = 'none';
@@ -285,7 +288,7 @@
       return `
         <div class="${sizeClass} rounded-full bg-black border border-emerald-500/40 overflow-hidden flex items-center justify-center shadow-md shrink-0 relative">
           <img
-            src="animalitos/${code}.png"
+            src="animalitos/animalitos/${code}.png"
             alt="${item.num} ${item.name}"
             loading="lazy"
             class="w-full h-full object-cover scale-[1.58]"
