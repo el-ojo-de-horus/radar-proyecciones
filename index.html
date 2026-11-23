@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>👑EL OJO DE HORUS🔥 — Radar Estadístico & Proyecciones</title>
+  <link rel="manifest" href="./manifest.json" />
+  <meta name="theme-color" content="#0f172a" />
   <!-- SDK oficial de Telegram Mini Apps -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <!-- SDK oficial de Monetag para Rewarded Interstitial -->
@@ -219,7 +221,7 @@
   <!-- MOTOR ESTADÍSTICO, ACIERTOS, CATÁLOGO OFICIAL Y SINCRONIZACIÓN -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     const CONFIG_PRODUCCION = {
@@ -471,6 +473,7 @@
         title: 'LOTTO ACTIVO',
         icon: '🦁',
         accent: 'amber',
+        dateStamp: getTodayStamp(),
         lastHour: '',
         nextHour: DRAW_HOURS[0],
         lastNum: '0',
@@ -483,6 +486,7 @@
         title: 'LA GRANJITA',
         icon: '🐔',
         accent: 'emerald',
+        dateStamp: getTodayStamp(),
         lastHour: '',
         nextHour: DRAW_HOURS[0],
         lastNum: '0',
@@ -491,6 +495,46 @@
         hits: []
       }
     };
+
+    function createEmptyDrawForToday(key, title, icon, accent, todayStamp) {
+      return {
+        key,
+        title,
+        icon,
+        accent,
+        dateStamp: todayStamp,
+        lastHour: '',
+        nextHour: DRAW_HOURS[0],
+        lastNum: '0',
+        drawId: `${todayStamp}_${DRAW_HOURS[0]}`,
+        history: [],
+        hits: []
+      };
+    }
+
+    function ensureDailyResetIfNeeded() {
+      const todayStamp = getTodayStamp();
+      let didReset = false;
+
+      if (radarState.lotto_activo.dateStamp !== todayStamp) {
+        radarState.lotto_activo = createEmptyDrawForToday('lotto_activo', 'LOTTO ACTIVO', '🦁', 'amber', todayStamp);
+        didReset = true;
+      }
+      if (radarState.la_granjita.dateStamp !== todayStamp) {
+        radarState.la_granjita = createEmptyDrawForToday('la_granjita', 'LA GRANJITA', '🐔', 'emerald', todayStamp);
+        didReset = true;
+      }
+
+      if (didReset) {
+        safeSetStorage(LOCAL_STATE_KEY, JSON.stringify(radarState));
+      }
+      return didReset;
+    }
+
+    function isBeforeFirstDailyDrawVE() {
+      const veNow = getVenezuelaDateObj();
+      return veNow.getHours() < 8;
+    }
 
     function getTerminalDigit(numStr) {
       if (numStr === '00') return 0;
@@ -778,13 +822,16 @@
       if (iconEl) iconEl.classList.add('animate-spin');
 
       try {
+        ensureDailyResetIfNeeded();
+        const todayStamp = getTodayStamp();
+
         if (isCloudReady && cloudDocRef) {
           const snap = await getDoc(cloudDocRef);
           if (snap.exists()) {
             const data = snap.data();
-            if (data && data.lotto_activo && data.la_granjita && data.lotto_activo.lastHour && data.la_granjita.lastHour) {
-              radarState.lotto_activo = { ...radarState.lotto_activo, ...data.lotto_activo, hits: data.lotto_activo.hits || radarState.lotto_activo.hits || [] };
-              radarState.la_granjita = { ...radarState.la_granjita, ...data.la_granjita, hits: data.la_granjita.hits || radarState.la_granjita.hits || [] };
+            if (data && data.lotto_activo && data.la_granjita && data.lotto_activo.dateStamp === todayStamp && data.la_granjita.dateStamp === todayStamp) {
+              radarState.lotto_activo = { ...radarState.lotto_activo, ...data.lotto_activo, hits: data.lotto_activo.hits || [] };
+              radarState.la_granjita = { ...radarState.la_granjita, ...data.la_granjita, hits: data.la_granjita.hits || [] };
               recomputeHistoryHits(radarState.lotto_activo);
               recomputeHistoryHits(radarState.la_granjita);
               safeSetStorage(LOCAL_STATE_KEY, JSON.stringify(radarState));
@@ -793,6 +840,12 @@
               return;
             }
           }
+        }
+
+        if (isBeforeFirstDailyDrawVE()) {
+          renderAll();
+          if (!silent) showToast('⏳ Esperando primer sorteo del día (08:00 AM)');
+          return;
         }
 
         const targetUrl = 'https://lotoven.com/animalitos/';
@@ -824,10 +877,11 @@
               const hit = evaluateHitForNewResult(radarState.lotto_activo, latest.hour, latest.num);
               if (hit) newHits.push(`🎯 ¡Acierto en LOTTO ACTIVO (${hit.hour}): ${hit.num} ${hit.name} [${hit.type}]!`);
 
+              radarState.lotto_activo.dateStamp = todayStamp;
               radarState.lotto_activo.lastHour = latest.hour;
               radarState.lotto_activo.nextHour = getNextHourLabel(latest.hour);
               radarState.lotto_activo.lastNum = latest.num;
-              radarState.lotto_activo.drawId = `${getTodayStamp()}_${radarState.lotto_activo.nextHour}`;
+              radarState.lotto_activo.drawId = `${todayStamp}_${radarState.lotto_activo.nextHour}`;
               radarState.lotto_activo.history = mergedLa;
               recomputeHistoryHits(radarState.lotto_activo);
               updatedAny = true;
@@ -840,10 +894,11 @@
               const hit = evaluateHitForNewResult(radarState.la_granjita, latest.hour, latest.num);
               if (hit) newHits.push(`🎯 ¡Acierto en LA GRANJITA (${hit.hour}): ${hit.num} ${hit.name} [${hit.type}]!`);
 
+              radarState.la_granjita.dateStamp = todayStamp;
               radarState.la_granjita.lastHour = latest.hour;
               radarState.la_granjita.nextHour = getNextHourLabel(latest.hour);
               radarState.la_granjita.lastNum = latest.num;
-              radarState.la_granjita.drawId = `${getTodayStamp()}_${radarState.la_granjita.nextHour}`;
+              radarState.la_granjita.drawId = `${todayStamp}_${radarState.la_granjita.nextHour}`;
               radarState.la_granjita.history = mergedLg;
               recomputeHistoryHits(radarState.la_granjita);
               updatedAny = true;
@@ -874,13 +929,18 @@
     }
 
     async function initCloudSync() {
+      const todayStamp = getTodayStamp();
       const savedLocal = safeGetStorage(LOCAL_STATE_KEY);
       if (savedLocal) {
         try {
           const parsedLocal = JSON.parse(savedLocal);
           if (parsedLocal && parsedLocal.lotto_activo && parsedLocal.la_granjita) {
-            radarState.lotto_activo = { ...radarState.lotto_activo, ...parsedLocal.lotto_activo, hits: parsedLocal.lotto_activo.hits || [] };
-            radarState.la_granjita = { ...radarState.la_granjita, ...parsedLocal.la_granjita, hits: parsedLocal.la_granjita.hits || [] };
+            radarState.lotto_activo = parsedLocal.lotto_activo.dateStamp === todayStamp
+              ? { ...radarState.lotto_activo, ...parsedLocal.lotto_activo, hits: parsedLocal.lotto_activo.hits || [] }
+              : createEmptyDrawForToday('lotto_activo', 'LOTTO ACTIVO', '🦁', 'amber', todayStamp);
+            radarState.la_granjita = parsedLocal.la_granjita.dateStamp === todayStamp
+              ? { ...radarState.la_granjita, ...parsedLocal.la_granjita, hits: parsedLocal.la_granjita.hits || [] }
+              : createEmptyDrawForToday('la_granjita', 'LA GRANJITA', '🐔', 'emerald', todayStamp);
             recomputeHistoryHits(radarState.lotto_activo);
             recomputeHistoryHits(radarState.la_granjita);
           }
@@ -899,11 +959,7 @@
         db = getFirestore(app);
 
         try {
-          if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-            await signInWithCustomToken(auth, __initial_auth_token);
-          } else {
-            await signInAnonymously(auth);
-          }
+          await signInAnonymously(auth);
         } catch (authErr) {}
 
         isCloudReady = true;
@@ -916,15 +972,29 @@
           (snap) => {
             if (snap.exists()) {
               const data = snap.data();
+              const currentDay = getTodayStamp();
               if (data && data.lotto_activo && data.la_granjita) {
-                if (data.lotto_activo.lastHour && data.lotto_activo.lastHour !== radarState.lotto_activo.lastHour) {
-                  evaluateHitForNewResult(radarState.lotto_activo, data.lotto_activo.lastHour, data.lotto_activo.lastNum);
+                const validLA = data.lotto_activo.dateStamp === currentDay;
+                const validLG = data.la_granjita.dateStamp === currentDay;
+
+                if (validLA) {
+                  if (data.lotto_activo.lastHour && data.lotto_activo.lastHour !== radarState.lotto_activo.lastHour) {
+                    evaluateHitForNewResult(radarState.lotto_activo, data.lotto_activo.lastHour, data.lotto_activo.lastNum);
+                  }
+                  radarState.lotto_activo = { ...radarState.lotto_activo, ...data.lotto_activo, hits: data.lotto_activo.hits || radarState.lotto_activo.hits || [] };
+                } else {
+                  radarState.lotto_activo = createEmptyDrawForToday('lotto_activo', 'LOTTO ACTIVO', '🦁', 'amber', currentDay);
                 }
-                if (data.la_granjita.lastHour && data.la_granjita.lastHour !== radarState.la_granjita.lastHour) {
-                  evaluateHitForNewResult(radarState.la_granjita, data.la_granjita.lastHour, data.la_granjita.lastNum);
+
+                if (validLG) {
+                  if (data.la_granjita.lastHour && data.la_granjita.lastHour !== radarState.la_granjita.lastHour) {
+                    evaluateHitForNewResult(radarState.la_granjita, data.la_granjita.lastHour, data.la_granjita.lastNum);
+                  }
+                  radarState.la_granjita = { ...radarState.la_granjita, ...data.la_granjita, hits: data.la_granjita.hits || radarState.la_granjita.hits || [] };
+                } else {
+                  radarState.la_granjita = createEmptyDrawForToday('la_granjita', 'LA GRANJITA', '🐔', 'emerald', currentDay);
                 }
-                radarState.lotto_activo = { ...radarState.lotto_activo, ...data.lotto_activo, hits: data.lotto_activo.hits || radarState.lotto_activo.hits || [] };
-                radarState.la_granjita = { ...radarState.la_granjita, ...data.la_granjita, hits: data.la_granjita.hits || radarState.la_granjita.hits || [] };
+
                 recomputeHistoryHits(radarState.lotto_activo);
                 recomputeHistoryHits(radarState.la_granjita);
                 safeSetStorage(LOCAL_STATE_KEY, JSON.stringify(radarState));
@@ -960,6 +1030,14 @@
     function updateCloudBadge(text) {
       const el = document.getElementById('cloud-status-pill');
       if (el) el.textContent = text;
+    }
+
+    function renderAll() {
+      renderDrawCards();
+      const panel = document.getElementById('operator-panel');
+      if (panel && !panel.classList.contains('hidden')) {
+        populateOperatorControls();
+      }
     }
 
     function renderDrawCards() {
@@ -1302,6 +1380,8 @@
       const newNum = document.getElementById(`op-num-${prefix}`)?.value;
       if (!newHour || newNum === undefined) return;
 
+      ensureDailyResetIfNeeded();
+      const todayStamp = getTodayStamp();
       const draw = radarState[sorteoKey];
       const normalizedNewNum = normalizeAnimalNum(newNum);
       const hit = evaluateHitForNewResult(draw, newHour, normalizedNewNum);
@@ -1312,8 +1392,9 @@
       ]);
       const latestItem = updatedList[updatedList.length - 1] || { hour: newHour, num: normalizedNewNum };
       const nextHour = getNextHourLabel(latestItem.hour);
-      const newDrawId = `${getTodayStamp()}_${nextHour}`;
+      const newDrawId = `${todayStamp}_${nextHour}`;
 
+      draw.dateStamp = todayStamp;
       draw.history = updatedList;
       draw.lastHour = latestItem.hour;
       draw.nextHour = nextHour;
@@ -1382,10 +1463,9 @@
           second: '2-digit'
         });
       }
-    }
-
-    function renderAll() {
-      renderDrawCards();
+      if (ensureDailyResetIfNeeded()) {
+        renderAll();
+      }
     }
 
     function initTelegramMiniApp() {
@@ -1398,6 +1478,12 @@
       } catch (e) {}
     }
 
+    function registerServiceWorker() {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./service-worker.js').catch(() => {});
+      }
+    }
+
     Object.assign(window, {
       toggleOperatorPanel,
       publishDrawResult,
@@ -1407,6 +1493,8 @@
       completeAdUnlock,
       syncExternalSourceNow
     });
+
+    registerServiceWorker();
 
     window.addEventListener('DOMContentLoaded', () => {
       initTelegramMiniApp();
