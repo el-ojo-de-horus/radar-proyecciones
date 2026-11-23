@@ -344,6 +344,42 @@ function parseResultsFromHtml(htmlText) {
 }
 
 async function run() {
+  const docRef = db.doc('ojo_horus_radar/live_draws');
+  const snap = await docRef.get();
+  const todayStamp = getVenezuelaDateStamp();
+
+  const emptyDrawState = (key, title, icon, accent) => ({
+    key,
+    title,
+    icon,
+    accent,
+    dateStamp: todayStamp,
+    lastHour: '',
+    nextHour: DRAW_HOURS[0],
+    lastNum: '0',
+    drawId: `${todayStamp}_${DRAW_HOURS[0]}`,
+    history: [],
+    hits: []
+  });
+
+  const existingData = snap.exists ? snap.data() : {};
+  const isNewDayLA = existingData.lotto_activo?.dateStamp !== todayStamp;
+  const isNewDayLG = existingData.la_granjita?.dateStamp !== todayStamp;
+
+  const currentData = {
+    lotto_activo: isNewDayLA
+      ? emptyDrawState('lotto_activo', 'LOTTO ACTIVO', '🦁', 'amber')
+      : existingData.lotto_activo,
+    la_granjita: isNewDayLG
+      ? emptyDrawState('la_granjita', 'LA GRANJITA', '🐔', 'emerald')
+      : existingData.la_granjita
+  };
+
+  let changed = Boolean(isNewDayLA || isNewDayLG);
+  if (changed) {
+    console.log(`Nuevo día detectado (${todayStamp}). Reiniciando sorteos y aciertos para la nueva jornada.`);
+  }
+
   const url = 'https://lotoven.com/animalitos/';
   console.log('Consultando resultados oficiales en LotoVen...');
   const res = await fetch(url, {
@@ -356,51 +392,18 @@ async function run() {
   const html = await res.text();
 
   const { laPairs, lgPairs } = parseResultsFromHtml(html);
-  if (!laPairs.length && !lgPairs.length) {
-    console.log('No se detectaron bloques horarios disponibles aún.');
-    return;
-  }
 
-  const docRef = db.doc('ojo_horus_radar/live_draws');
-  const snap = await docRef.get();
-  const todayStamp = getVenezuelaDateStamp();
+  const veNow = getVenezuelaDateParts().dateObj;
+  const isBeforeFirstDraw = veNow.getHours() < 8;
 
-  const currentData = snap.exists ? snap.data() : {
-    lotto_activo: {
-      key: 'lotto_activo',
-      title: 'LOTTO ACTIVO',
-      icon: '🦁',
-      accent: 'amber',
-      lastHour: '',
-      nextHour: DRAW_HOURS[0],
-      lastNum: '0',
-      drawId: `${todayStamp}_${DRAW_HOURS[0]}`,
-      history: [],
-      hits: []
-    },
-    la_granjita: {
-      key: 'la_granjita',
-      title: 'LA GRANJITA',
-      icon: '🐔',
-      accent: 'emerald',
-      lastHour: '',
-      nextHour: DRAW_HOURS[0],
-      lastNum: '0',
-      drawId: `${todayStamp}_${DRAW_HOURS[0]}`,
-      history: [],
-      hits: []
-    }
-  };
-
-  let changed = false;
-
-  if (laPairs.length > 0) {
+  if (!isBeforeFirstDraw && laPairs.length > 0) {
     const mergedLa = sortHistoryChronologically([...(currentData.lotto_activo.history || []), ...laPairs]);
     const latest = mergedLa[mergedLa.length - 1];
     if (latest.hour !== currentData.lotto_activo.lastHour || latest.num !== currentData.lotto_activo.lastNum) {
       const nextHour = getNextHourLabel(latest.hour);
       currentData.lotto_activo = {
         ...currentData.lotto_activo,
+        dateStamp: todayStamp,
         lastHour: latest.hour,
         nextHour,
         lastNum: latest.num,
@@ -413,13 +416,14 @@ async function run() {
     }
   }
 
-  if (lgPairs.length > 0) {
+  if (!isBeforeFirstDraw && lgPairs.length > 0) {
     const mergedLg = sortHistoryChronologically([...(currentData.la_granjita.history || []), ...lgPairs]);
     const latest = mergedLg[mergedLg.length - 1];
     if (latest.hour !== currentData.la_granjita.lastHour || latest.num !== currentData.la_granjita.lastNum) {
       const nextHour = getNextHourLabel(latest.hour);
       currentData.la_granjita = {
         ...currentData.la_granjita,
+        dateStamp: todayStamp,
         lastHour: latest.hour,
         nextHour,
         lastNum: latest.num,
@@ -435,6 +439,7 @@ async function run() {
   if (changed) {
     await docRef.set({
       ...currentData,
+      dateStamp: todayStamp,
       updatedAt: new Date().toISOString()
     });
     console.log('Firestore actualizado correctamente.');
