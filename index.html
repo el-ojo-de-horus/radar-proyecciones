@@ -103,6 +103,22 @@
   <!-- CONTENIDO PRINCIPAL -->
   <main class="flex-1 max-w-5xl w-full mx-auto px-3 sm:px-5 py-4 space-y-5">
 
+    <!-- BANNER DE ACTIVACIÓN DE NOTIFICACIONES PUSH / TELEGRAM -->
+    <section id="push-optin-banner" class="bg-gradient-to-r from-amber-500/15 via-slate-900 to-emerald-500/15 border border-amber-500/40 rounded-2xl p-3.5 sm:px-5 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg">
+      <div class="flex items-center gap-3 text-center sm:text-left">
+        <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-xl shrink-0">
+          🔔
+        </div>
+        <div>
+          <h2 class="font-extrabold text-xs sm:text-sm text-white">Alertas Automáticas de Sorteos y Proyecciones</h2>
+          <p id="push-status-subtitle" class="text-[11px] text-slate-300">Recibe avisos directos en tu Telegram antes de los bloques clave del día.</p>
+        </div>
+      </div>
+      <button id="btn-toggle-push" onclick="toggleUserPushNotifications()" class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs shadow-lg shadow-amber-500/20 transition flex items-center justify-center gap-2 shrink-0">
+        <span>🔔 Activar notificaciones push para no perderte ningún sorteo</span>
+      </button>
+    </section>
+
     <!-- PANEL COLAPSABLE DE OPERADOR (PARA PUBLICAR EL RESULTADO DE CADA HORA EN TIEMPO REAL) -->
     <section id="operator-panel" class="hidden bg-panel border border-amber-500/40 rounded-2xl p-4 space-y-4 shadow-2xl">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
@@ -1474,8 +1490,103 @@
           const tg = window.Telegram.WebApp;
           tg.ready();
           tg.expand();
+          const tgUser = tg.initDataUnsafe?.user;
+          if (tgUser && tgUser.id) {
+            safeSetStorage('tg_subscriber_id', String(tgUser.id));
+            safeSetStorage('tg_subscriber_name', tgUser.first_name || '');
+            safeSetStorage('tg_subscriber_username', tgUser.username || '');
+            if (safeGetStorage('tg_push_enabled') === '1') {
+              registerTelegramSubscriber(tgUser, true);
+            }
+          }
         }
       } catch (e) {}
+      updatePushButtonUI();
+    }
+
+    function updatePushButtonUI() {
+      const btn = document.getElementById('btn-toggle-push');
+      const subtitle = document.getElementById('push-status-subtitle');
+      if (!btn) return;
+
+      const isEnabled = safeGetStorage('tg_push_enabled') === '1';
+      if (isEnabled) {
+        btn.className = 'w-full sm:w-auto px-4 py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/50 text-emerald-300 font-extrabold text-xs transition flex items-center justify-center gap-2 shrink-0';
+        btn.innerHTML = '<span>✅ Notificaciones Activadas (Toca para silenciar)</span>';
+        if (subtitle) {
+          subtitle.textContent = 'Tus alertas están activas. El bot te avisará en los horarios programados.';
+        }
+      } else {
+        btn.className = 'w-full sm:w-auto px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs shadow-lg shadow-amber-500/20 transition flex items-center justify-center gap-2 shrink-0';
+        btn.innerHTML = '<span>🔔 Activar notificaciones push para no perderte ningún sorteo</span>';
+        if (subtitle) {
+          subtitle.textContent = 'Recibe avisos directos en tu Telegram antes de los bloques clave del día.';
+        }
+      }
+    }
+
+    async function toggleUserPushNotifications() {
+      const currentlyEnabled = safeGetStorage('tg_push_enabled') === '1';
+      const nextState = !currentlyEnabled;
+      safeSetStorage('tg_push_enabled', nextState ? '1' : '0');
+      updatePushButtonUI();
+
+      let tgUser = null;
+      try {
+        tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user || null;
+      } catch (e) {}
+
+      const storedChatId = tgUser?.id ? String(tgUser.id) : safeGetStorage('tg_subscriber_id');
+
+      if (!storedChatId) {
+        if (nextState) {
+          showToast('📲 Abre esta Mini App desde tu bot de Telegram para vincular tu chat automáticamente.');
+        } else {
+          showToast('🔕 Notificaciones desactivadas en este dispositivo.');
+        }
+        return;
+      }
+
+      const payloadUser = {
+        id: storedChatId,
+        first_name: tgUser?.first_name || safeGetStorage('tg_subscriber_name') || '',
+        username: tgUser?.username || safeGetStorage('tg_subscriber_username') || ''
+      };
+
+      await registerTelegramSubscriber(payloadUser, nextState);
+      if (nextState) {
+        showToast('🔔 ¡Listo! Notificaciones push activadas en tu Telegram.');
+      } else {
+        showToast('🔕 Notificaciones silenciadas. Puedes volver a activarlas cuando quieras.');
+      }
+    }
+
+    // Guarda o actualiza el estado del usuario de Telegram en Firestore
+    async function registerTelegramSubscriber(tgUser, active = true) {
+      if (!tgUser || !tgUser.id) return;
+      const chatId = String(tgUser.id);
+      safeSetStorage('tg_subscriber_id', chatId);
+
+      const trySave = async () => {
+        if (!isCloudReady || !db) return false;
+        try {
+          const subRef = doc(db, 'ojo_horus_subscribers', chatId);
+          await setDoc(subRef, {
+            chatId,
+            firstName: tgUser.first_name || '',
+            username: tgUser.username || '',
+            active: Boolean(active),
+            updatedAt: new Date().toISOString()
+          }, { merge: true });
+          return true;
+        } catch (e) {
+          return false;
+        }
+      };
+
+      if (!(await trySave())) {
+        setTimeout(() => { trySave(); }, 3500);
+      }
     }
 
     function registerServiceWorker() {
@@ -1491,7 +1602,8 @@
       openAdUnlockModal,
       closeAdModal,
       completeAdUnlock,
-      syncExternalSourceNow
+      syncExternalSourceNow,
+      toggleUserPushNotifications
     });
 
     registerServiceWorker();
