@@ -574,7 +574,14 @@
       else backup2 = fallbackPool[(hourIdx + sorteoOffset) % fallbackPool.length] || ANIMALITOS_CATALOG[14];
 
       const ruptureLabel = isTerminalSaturated ? `ruptura por saturación en terminal ${lastTerminal} hacia su opuesto (${ruptureTerminal})` : `confluencia de eje matricial (${vertex}) y secuencia horaria`;
-      const reason = `Tras registrar ${lastItem.num} (${lastItem.name}), el modelo proyecta ${ruptureLabel} para el bloque de las ${nextHour}.`;
+      
+      let reason = '';
+      if (!history || history.length === 0) {
+          reason = `Para el primer sorteo del día (${nextHour}), el algoritmo toma el eje matricial (${vertex}) y la fecha actual como punto de partida para romper el hielo.`;
+      } else {
+          const gameName = sorteoKey === 'lotto_activo' ? 'Lotto Activo' : 'La Granjita';
+          reason = `Tras registrar ${lastItem.num} (${lastItem.name}) en ${gameName}, el modelo proyecta ${ruptureLabel} para el bloque de las ${nextHour}.`;
+      }
 
       return { primary, backups: [backup1, backup2], reason };
     }
@@ -882,7 +889,7 @@
 
         const lastAnimal = getAnimalByNum(effectiveLastNum);
         const projection = computeStatisticalProjection(draw.key, effectiveLastNum, effectiveNextHour, sortedHistory);
-        const currentDrawId = `${getTodayStamp()}_${effectiveNextHour}`;
+        const currentDrawId = `${draw.key}_${getTodayStamp()}_${effectiveNextHour}`;
         const unlocked = isProjectionUnlocked(draw.key, currentDrawId);
         
         const drawHits = Array.isArray(draw.hits) ? draw.hits : [];
@@ -922,51 +929,65 @@
             </div>
           ` : '';
 
-        const projectionSectionHTML = unlocked ? `
-            <div class="bg-obsidian border ${borderAccent} rounded-2xl p-4 space-y-3 transition-all">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-1.5"><span class="text-xs">🔓</span><span class="text-[11px] font-extrabold uppercase tracking-wider ${titleColor}">Proyección Tendencia • ${effectiveNextHour}</span></div>
-                <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 font-mono text-[10px] font-extrabold text-emerald-300">ACTIVA</span>
-              </div>
-              <div class="flex items-center justify-between bg-panel border border-slate-800 rounded-xl p-3">
-                <div class="flex items-center gap-3">
-                  ${renderAnimalVisual(projection.primary, 'w-14 h-14', 'text-3xl')}
-                  <div>
-                    <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Tendencia Principal</div>
-                    <div class="font-extrabold text-base sm:text-lg text-white"><span class="font-mono ${titleColor}">#${projection.primary.num}</span> • ${projection.primary.name}</div>
-                    <div class="text-[11px] text-slate-400">Sector: ${projection.primary.sector}</div>
-                  </div>
-                </div>
-              </div>
-              <div class="grid grid-cols-2 gap-2">
-                ${projection.backups.map((b, i) => `
-                  <div class="bg-panel/80 border border-slate-800/90 rounded-xl px-3 py-2 flex items-center gap-2.5">
-                    ${renderAnimalVisual(b, 'w-10 h-10', 'text-xl')}
-                    <div><div class="text-[9px] uppercase font-bold text-slate-400">Respaldo #${i + 1}</div><div class="text-xs font-extrabold text-slate-100"><span class="font-mono ${titleColor}">${b.num}</span> ${b.name}</div></div>
-                  </div>
-                `).join('')}
-              </div>
-              <p class="text-[11px] text-slate-300 bg-slate-900/70 border border-slate-800 rounded-xl px-3 py-2 leading-relaxed">📈 <strong>Análisis:</strong> ${projection.reason}</p>
-            </div>
-          ` : `
-            <div class="relative bg-obsidian border border-slate-800 rounded-2xl p-4 overflow-hidden">
-              <div class="select-none blur-[6px] opacity-35 pointer-events-none space-y-3" aria-hidden="true">
-                <div class="flex justify-between"><span class="text-xs font-bold">PROYECCIÓN ESTADÍSTICA ${effectiveNextHour}</span><span class="text-xs font-mono">ACTIVA</span></div>
-                <div class="h-14 bg-slate-800 rounded-xl"></div>
-                <div class="grid grid-cols-2 gap-2"><div class="h-10 bg-slate-800 rounded-xl"></div><div class="h-10 bg-slate-800 rounded-xl"></div></div>
-              </div>
-              <div class="absolute inset-0 bg-slate-950/75 backdrop-blur-[2px] flex flex-col items-center justify-center p-4 text-center space-y-2.5">
-                <div class="w-11 h-11 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center text-xl shadow-lg">🔒</div>
-                <div>
-                  <h4 class="font-extrabold text-xs sm:text-sm text-white">Proyección de <span class="${titleColor}">${effectiveNextHour}</span> Lista</h4>
-                  <p class="text-[11px] text-slate-400 max-w-xs mx-auto mt-0.5">El patrón ha detectado un movimiento clave para este bloque. Desbloquea gratis viendo un breve anuncio.</p>
-                </div>
-                <button onclick="openAdUnlockModal('${draw.key}')" class="px-4 py-2.5 rounded-xl font-extrabold text-xs shadow-lg transition flex items-center gap-2 ${ctaBtnStyle}">
-                  <span>📺</span><span>Ver Anuncio y Desbloquear (${effectiveNextHour})</span>
-                </button>
-              </div>
+        let projectionSectionHTML = '';
+        
+        if (!hasResult) {
+          projectionSectionHTML = `
+            <div class="bg-obsidian border border-slate-800 rounded-2xl p-5 flex flex-col items-center justify-center text-center space-y-2 min-h-[140px]">
+              <div class="text-3xl animate-pulse">⏳</div>
+              <h4 class="font-extrabold text-sm text-slate-200">Esperando Primer Sorteo del Día</h4>
+              <p class="text-[11px] text-slate-400 max-w-xs mx-auto">
+                El motor estadístico se activará automáticamente cuando se registre el resultado oficial de las <strong class="text-amber-400">08:00 AM</strong>.
+              </p>
             </div>
           `;
+        } else {
+          projectionSectionHTML = unlocked ? `
+              <div class="bg-obsidian border ${borderAccent} rounded-2xl p-4 space-y-3 transition-all">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-1.5"><span class="text-xs">🔓</span><span class="text-[11px] font-extrabold uppercase tracking-wider ${titleColor}">Proyección Tendencia • ${effectiveNextHour}</span></div>
+                  <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 font-mono text-[10px] font-extrabold text-emerald-300">ACTIVA</span>
+                </div>
+                <div class="flex items-center justify-between bg-panel border border-slate-800 rounded-xl p-3">
+                  <div class="flex items-center gap-3">
+                    ${renderAnimalVisual(projection.primary, 'w-14 h-14', 'text-3xl')}
+                    <div>
+                      <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Tendencia Principal</div>
+                      <div class="font-extrabold text-base sm:text-lg text-white"><span class="font-mono ${titleColor}">#${projection.primary.num}</span> • ${projection.primary.name}</div>
+                      <div class="text-[11px] text-slate-400">Sector: ${projection.primary.sector}</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                  ${projection.backups.map((b, i) => `
+                    <div class="bg-panel/80 border border-slate-800/90 rounded-xl px-3 py-2 flex items-center gap-2.5">
+                      ${renderAnimalVisual(b, 'w-10 h-10', 'text-xl')}
+                      <div><div class="text-[9px] uppercase font-bold text-slate-400">Respaldo #${i + 1}</div><div class="text-xs font-extrabold text-slate-100"><span class="font-mono ${titleColor}">${b.num}</span> ${b.name}</div></div>
+                    </div>
+                  `).join('')}
+                </div>
+                <p class="text-[11px] text-slate-300 bg-slate-900/70 border border-slate-800 rounded-xl px-3 py-2 leading-relaxed">📈 <strong>Análisis:</strong> ${projection.reason}</p>
+              </div>
+            ` : `
+              <div class="relative bg-obsidian border border-slate-800 rounded-2xl p-4 overflow-hidden">
+                <div class="select-none blur-[6px] opacity-35 pointer-events-none space-y-3" aria-hidden="true">
+                  <div class="flex justify-between"><span class="text-xs font-bold">PROYECCIÓN ESTADÍSTICA ${effectiveNextHour}</span><span class="text-xs font-mono">ACTIVA</span></div>
+                  <div class="h-14 bg-slate-800 rounded-xl"></div>
+                  <div class="grid grid-cols-2 gap-2"><div class="h-10 bg-slate-800 rounded-xl"></div><div class="h-10 bg-slate-800 rounded-xl"></div></div>
+                </div>
+                <div class="absolute inset-0 bg-slate-950/75 backdrop-blur-[2px] flex flex-col items-center justify-center p-4 text-center space-y-2.5">
+                  <div class="w-11 h-11 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center text-xl shadow-lg">🔒</div>
+                  <div>
+                    <h4 class="font-extrabold text-xs sm:text-sm text-white">Proyección de <span class="${titleColor}">${effectiveNextHour}</span> Lista</h4>
+                    <p class="text-[11px] text-slate-400 max-w-xs mx-auto mt-0.5">El patrón ha detectado un movimiento clave para este bloque. Desbloquea gratis viendo un breve anuncio.</p>
+                  </div>
+                  <button onclick="openAdUnlockModal('${draw.key}')" class="px-4 py-2.5 rounded-xl font-extrabold text-xs shadow-lg transition flex items-center gap-2 ${ctaBtnStyle}">
+                    <span>📺</span><span>Ver Anuncio y Desbloquear (${effectiveNextHour})</span>
+                  </button>
+                </div>
+              </div>
+            `;
+        }
 
         return `
           <article class="bg-panel border ${borderAccent} rounded-2xl overflow-hidden shadow-xl flex flex-col justify-between">
@@ -1054,7 +1075,7 @@
       if (!draw) return;
 
       const effectiveNextHour = draw.lastHour ? getNextHourLabel(draw.lastHour) : (draw.nextHour || DRAW_HOURS[0]);
-      const currentDrawId = `${getTodayStamp()}_${effectiveNextHour}`;
+      const currentDrawId = `${draw.key}_${getTodayStamp()}_${effectiveNextHour}`;
       
       await setProjectionUnlocked(draw.key, currentDrawId);
       
