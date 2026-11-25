@@ -51,7 +51,7 @@
   <!-- Notificaciones Toast -->
   <div id="toast-container" class="fixed bottom-4 right-4 left-4 sm:left-auto z-50 flex flex-col gap-2 max-w-sm ml-auto pointer-events-none"></div>
 
-  <!-- CABECERA COMPACTA (OPTIMIZADA PARA TELEGRAM MINI APP Y GOOGLE SITES) -->
+  <!-- CABECERA COMPACTA -->
   <header class="bg-panel/95 backdrop-blur-md border-b border-slate-800/90 sticky top-0 z-30">
     <div class="max-w-5xl mx-auto px-3 sm:px-5 py-3 flex items-center justify-between gap-2">
       <div class="flex items-center gap-2.5">
@@ -83,8 +83,8 @@
         </div>
       </div>
 
-      <!-- Botón de Panel Operador (Para actualizar resultados en tiempo real) -->
-      <div class="flex items-center gap-2">
+      <!-- Botones de Operador (Ocultos por defecto, visibles con ?admin=true) -->
+      <div id="admin-controls" class="items-center gap-2" style="display: none;">
         <span id="cloud-status-pill" class="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-[10px] font-mono text-emerald-400">
           ● Radar Activo
         </span>
@@ -119,7 +119,7 @@
       </button>
     </section>
 
-    <!-- PANEL COLAPSABLE DE OPERADOR (PARA PUBLICAR EL RESULTADO DE CADA HORA EN TIEMPO REAL) -->
+    <!-- PANEL COLAPSABLE DE OPERADOR -->
     <section id="operator-panel" class="hidden bg-panel border border-amber-500/40 rounded-2xl p-4 space-y-4 shadow-2xl">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
         <div>
@@ -130,7 +130,6 @@
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-        <!-- Control Lotto Activo -->
         <div class="bg-obsidian border border-slate-800 rounded-xl p-3.5 space-y-2.5">
           <div class="flex items-center justify-between">
             <span class="font-extrabold text-amber-400">🦁 LOTTO ACTIVO</span>
@@ -151,7 +150,6 @@
           </button>
         </div>
 
-        <!-- Control La Granjita -->
         <div class="bg-obsidian border border-slate-800 rounded-xl p-3.5 space-y-2.5">
           <div class="flex items-center justify-between">
             <span class="font-extrabold text-emerald-400">🐔 LA GRANJITA</span>
@@ -179,10 +177,10 @@
       </div>
     </section>
 
-    <!-- TARJETAS INDEPENDIENTES POR SORTEO (LOTTO ACTIVO Y LA GRANJITA) -->
+    <!-- TARJETAS INDEPENDIENTES POR SORTEO -->
     <section id="draws-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-5"></section>
 
-    <!-- AVISO LEGAL DE CUMPLIMIENTO (SIN TÉRMINOS DE APUESTAS) -->
+    <!-- AVISO LEGAL -->
     <footer class="text-center text-[11px] text-slate-500 pb-4 px-2 leading-relaxed">
       <strong>Nota Metodológica:</strong> Esta herramienta presenta indicadores estadísticos, frecuencias históricas y modelos de proyección de tendencias basados en resultados públicos. Su contenido es estrictamente informativo y analítico.
     </footer>
@@ -212,13 +210,9 @@
           </p>
         </div>
 
-        <div class="space-y-1.5">
-          <div class="flex items-center justify-between text-[11px] font-mono">
-            <span class="text-slate-400">Verificando visualización...</span>
-            <span id="ad-countdown-text" class="text-amber-400 font-bold">5s</span>
-          </div>
-          <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
-            <div id="ad-progress-bar" class="h-full bg-gradient-to-r from-amber-500 to-emerald-400 transition-all duration-300" style="width: 0%"></div>
+        <div id="ad-loading-state" class="space-y-1.5 hidden">
+          <div class="flex items-center justify-center text-[11px] font-mono text-amber-400">
+            <span>⏳ Cargando anuncio...</span>
           </div>
         </div>
       </div>
@@ -227,18 +221,18 @@
         <button onclick="closeAdModal()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs">
           Cancelar
         </button>
-        <button id="ad-confirm-btn" disabled onclick="completeAdUnlock()" class="px-5 py-2.5 rounded-xl bg-slate-700 text-slate-400 font-extrabold text-xs transition cursor-not-allowed">
-          ⏳ Espera 5s...
+        <button id="ad-confirm-btn" disabled onclick="completeAdUnlock()" class="px-5 py-2.5 rounded-xl bg-slate-700 text-slate-400 font-extrabold text-xs transition cursor-not-allowed hidden">
+          🔓 Ver Proyección Ahora
         </button>
       </div>
     </div>
   </div>
 
-  <!-- MOTOR ESTADÍSTICO, ACIERTOS, CATÁLOGO OFICIAL Y SINCRONIZACIÓN -->
+  <!-- MOTOR ESTADÍSTICO -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, setDoc, onSnapshot, arrayUnion } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     const CONFIG_PRODUCCION = {
       firebase: {
@@ -248,8 +242,7 @@
         storageBucket: "radar-proyecciones.firebasestorage.app",
         messagingSenderId: "1052108888599",
         appId: "1:1052108888599:web:494b17e28e0f9f097d9a52"
-      },
-      webAdDurationSeconds: 5
+      }
     };
 
     const ANIMALITOS_CATALOG = [
@@ -400,40 +393,34 @@
     }
 
     const LOCAL_STATE_KEY = 'ojo_horus_radar_state_v3';
-    const memoryUnlocks = {};
+    
+    // --- NUEVA LÓGICA DE CANDADOS EN FIREBASE (ANTI-HACKEO) ---
+    let currentTgUser = null;
+    let userUnlocks = {}; // Caché local para validación síncrona
 
     function safeGetStorage(key) {
-      try {
-        return window.localStorage ? window.localStorage.getItem(key) : null;
-      } catch (e) {
-        return null;
-      }
+      try { return window.localStorage ? window.localStorage.getItem(key) : null; } catch (e) { return null; }
     }
 
     function safeSetStorage(key, val) {
-      try {
-        if (window.localStorage) {
-          window.localStorage.setItem(key, val);
-          return true;
-        }
-      } catch (e) {}
+      try { if (window.localStorage) { window.localStorage.setItem(key, val); return true; } } catch (e) {}
       return false;
     }
 
-    function getUnlockStorageKey(sorteo, drawId) {
-      return `unlocked_${sorteo}_${drawId}`;
-    }
-
     function isProjectionUnlocked(sorteo, drawId) {
-      const key = getUnlockStorageKey(sorteo, drawId);
-      if (memoryUnlocks[key]) return true;
-      return safeGetStorage(key) === '1';
+      return userUnlocks[drawId] === true;
     }
 
-    function setProjectionUnlocked(sorteo, drawId) {
-      const key = getUnlockStorageKey(sorteo, drawId);
-      memoryUnlocks[key] = true;
-      safeSetStorage(key, '1');
+    async function setProjectionUnlocked(sorteo, drawId) {
+      userUnlocks[drawId] = true;
+      if (db && currentTgUser) {
+        try {
+          const userRef = doc(db, 'ojo_horus_users', String(currentTgUser.id));
+          await setDoc(userRef, { unlocks: arrayUnion(drawId) }, { merge: true });
+        } catch (e) {
+          console.error("Error guardando desbloqueo en Firebase:", e);
+        }
+      }
     }
 
     function getSortLogoSVG(sorteoKey, sizeClass = 'w-11 h-11') {
@@ -484,72 +471,25 @@
     }
 
     const radarState = {
-      lotto_activo: {
-        key: 'lotto_activo',
-        title: 'LOTTO ACTIVO',
-        icon: '🦁',
-        accent: 'amber',
-        dateStamp: getTodayStamp(),
-        lastHour: '',
-        nextHour: DRAW_HOURS[0],
-        lastNum: '0',
-        drawId: `${getTodayStamp()}_${DRAW_HOURS[0]}`,
-        history: [],
-        hits: []
-      },
-      la_granjita: {
-        key: 'la_granjita',
-        title: 'LA GRANJITA',
-        icon: '🐔',
-        accent: 'emerald',
-        dateStamp: getTodayStamp(),
-        lastHour: '',
-        nextHour: DRAW_HOURS[0],
-        lastNum: '0',
-        drawId: `${getTodayStamp()}_${DRAW_HOURS[0]}`,
-        history: [],
-        hits: []
-      }
+      lotto_activo: { key: 'lotto_activo', title: 'LOTTO ACTIVO', icon: '🦁', accent: 'amber', dateStamp: getTodayStamp(), lastHour: '', nextHour: DRAW_HOURS[0], lastNum: '0', drawId: `${getTodayStamp()}_${DRAW_HOURS[0]}`, history: [], hits: [] },
+      la_granjita: { key: 'la_granjita', title: 'LA GRANJITA', icon: '🐔', accent: 'emerald', dateStamp: getTodayStamp(), lastHour: '', nextHour: DRAW_HOURS[0], lastNum: '0', drawId: `${getTodayStamp()}_${DRAW_HOURS[0]}`, history: [], hits: [] }
     };
 
     function createEmptyDrawForToday(key, title, icon, accent, todayStamp) {
-      return {
-        key,
-        title,
-        icon,
-        accent,
-        dateStamp: todayStamp,
-        lastHour: '',
-        nextHour: DRAW_HOURS[0],
-        lastNum: '0',
-        drawId: `${todayStamp}_${DRAW_HOURS[0]}`,
-        history: [],
-        hits: []
-      };
+      return { key, title, icon, accent, dateStamp: todayStamp, lastHour: '', nextHour: DRAW_HOURS[0], lastNum: '0', drawId: `${todayStamp}_${DRAW_HOURS[0]}`, history: [], hits: [] };
     }
 
     function ensureDailyResetIfNeeded() {
       const todayStamp = getTodayStamp();
       let didReset = false;
-
-      if (radarState.lotto_activo.dateStamp !== todayStamp) {
-        radarState.lotto_activo = createEmptyDrawForToday('lotto_activo', 'LOTTO ACTIVO', '🦁', 'amber', todayStamp);
-        didReset = true;
-      }
-      if (radarState.la_granjita.dateStamp !== todayStamp) {
-        radarState.la_granjita = createEmptyDrawForToday('la_granjita', 'LA GRANJITA', '🐔', 'emerald', todayStamp);
-        didReset = true;
-      }
-
-      if (didReset) {
-        safeSetStorage(LOCAL_STATE_KEY, JSON.stringify(radarState));
-      }
+      if (radarState.lotto_activo.dateStamp !== todayStamp) { radarState.lotto_activo = createEmptyDrawForToday('lotto_activo', 'LOTTO ACTIVO', '🦁', 'amber', todayStamp); didReset = true; }
+      if (radarState.la_granjita.dateStamp !== todayStamp) { radarState.la_granjita = createEmptyDrawForToday('la_granjita', 'LA GRANJITA', '🐔', 'emerald', todayStamp); didReset = true; }
+      if (didReset) safeSetStorage(LOCAL_STATE_KEY, JSON.stringify(radarState));
       return didReset;
     }
 
     function isBeforeFirstDailyDrawVE() {
-      const veNow = getVenezuelaDateObj();
-      return veNow.getHours() < 8;
+      return getVenezuelaDateObj().getHours() < 8;
     }
 
     function getTerminalDigit(numStr) {
@@ -563,12 +503,9 @@
       const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
       const yyyy = String(dateObj.getFullYear());
       let row = `${dd}${mm}${yyyy}`.split('').map(Number);
-
       while (row.length > 2) {
         const nextRow = [];
-        for (let i = 0; i < row.length - 1; i++) {
-          nextRow.push((row[i] + row[i + 1]) % 10);
-        }
+        for (let i = 0; i < row.length - 1; i++) nextRow.push((row[i] + row[i + 1]) % 10);
         row = nextRow;
       }
       const base = row[0] ?? 0;
@@ -578,22 +515,14 @@
 
     const COMPLEMENT_TERMINAL = { 0: 5, 5: 0, 1: 6, 6: 1, 2: 7, 7: 2, 3: 8, 8: 3, 4: 9, 9: 4 };
     const VISUAL_INVERSION = { '6': '9', '9': '6', '16': '19', '19': '16', '26': '29', '29': '26' };
-
     const VIP_TRIANGULATIONS = [
-      { pair: ['12', '18'], target: '23' },
-      { pair: ['0', '33'], target: '00' },
-      { pair: ['11', '27'], target: '5' },
-      { pair: ['5', '10'], target: '25' },
-      { pair: ['2', '26'], target: '12' },
-      { pair: ['14', '21'], target: '9' },
-      { pair: ['8', '20'], target: '32' },
-      { pair: ['35', '15'], target: '10' }
+      { pair: ['12', '18'], target: '23' }, { pair: ['0', '33'], target: '00' }, { pair: ['11', '27'], target: '5' },
+      { pair: ['5', '10'], target: '25' }, { pair: ['2', '26'], target: '12' }, { pair: ['14', '21'], target: '9' },
+      { pair: ['8', '20'], target: '32' }, { pair: ['35', '15'], target: '10' }
     ];
 
     function findCandidatesByTerminal(terminalDigit, excludeNums = new Set()) {
-      return ANIMALITOS_CATALOG.filter(
-        a => getTerminalDigit(a.num) === terminalDigit && !excludeNums.has(a.num)
-      );
+      return ANIMALITOS_CATALOG.filter(a => getTerminalDigit(a.num) === terminalDigit && !excludeNums.has(a.num));
     }
 
     function computeStatisticalProjection(sorteoKey, lastNum, nextHour, history = []) {
@@ -607,31 +536,20 @@
       const sorteoOffset = sorteoKey === 'lotto_activo' ? 0 : 1;
 
       const terminalCounts = {};
-      recentNums.forEach(n => {
-        const t = getTerminalDigit(n);
-        terminalCounts[t] = (terminalCounts[t] || 0) + 1;
-      });
+      recentNums.forEach(n => { const t = getTerminalDigit(n); terminalCounts[t] = (terminalCounts[t] || 0) + 1; });
       const lastTerminal = getTerminalDigit(lastItem.num);
       const isTerminalSaturated = (terminalCounts[lastTerminal] || 0) >= 2;
-      const ruptureTerminal = isTerminalSaturated
-        ? COMPLEMENT_TERMINAL[lastTerminal]
-        : (lastTerminal + 1) % 10;
+      const ruptureTerminal = isTerminalSaturated ? COMPLEMENT_TERMINAL[lastTerminal] : (lastTerminal + 1) % 10;
 
       let vipTargetNum = null;
       const lastTwo = recentNums.slice(-2);
       if (lastTwo.length === 2) {
-        const foundPattern = VIP_TRIANGULATIONS.find(
-          p => (p.pair.includes(lastTwo[0]) && p.pair.includes(lastTwo[1]))
-        );
-        if (foundPattern && !excludeSet.has(foundPattern.target)) {
-          vipTargetNum = foundPattern.target;
-        }
+        const foundPattern = VIP_TRIANGULATIONS.find(p => (p.pair.includes(lastTwo[0]) && p.pair.includes(lastTwo[1])));
+        if (foundPattern && !excludeSet.has(foundPattern.target)) vipTargetNum = foundPattern.target;
       }
 
       const vertexPool = findCandidatesByTerminal(vertex, excludeSet);
-      const primary = vertexPool.length
-        ? vertexPool[(hourIdx + sorteoOffset) % vertexPool.length]
-        : getAnimalByNum(String((vertex + 10) % 37));
+      const primary = vertexPool.length ? vertexPool[(hourIdx + sorteoOffset) % vertexPool.length] : getAnimalByNum(String((vertex + 10) % 37));
       excludeSet.add(primary.num);
 
       let backup1 = null;
@@ -641,82 +559,46 @@
         backup1 = getAnimalByNum(VISUAL_INVERSION[lastItem.num]);
       } else {
         const rupturePool = findCandidatesByTerminal(ruptureTerminal, excludeSet);
-        backup1 = rupturePool.length
-          ? rupturePool[(hourIdx + sorteoOffset) % rupturePool.length]
-          : findCandidatesByTerminal(base, excludeSet)[0] || ANIMALITOS_CATALOG[2];
+        backup1 = rupturePool.length ? rupturePool[(hourIdx + sorteoOffset) % rupturePool.length] : findCandidatesByTerminal(base, excludeSet)[0] || ANIMALITOS_CATALOG[2];
       }
       excludeSet.add(backup1.num);
 
       const presentNums = new Set(recentNums);
-      const absentBaseCandidates = ANIMALITOS_CATALOG.filter(
-        a => !presentNums.has(a.num) && !excludeSet.has(a.num) && getTerminalDigit(a.num) === base
-      );
-      const absentCandidates = ANIMALITOS_CATALOG.filter(
-        a => !presentNums.has(a.num) && !excludeSet.has(a.num)
-      );
+      const absentBaseCandidates = ANIMALITOS_CATALOG.filter(a => !presentNums.has(a.num) && !excludeSet.has(a.num) && getTerminalDigit(a.num) === base);
+      const absentCandidates = ANIMALITOS_CATALOG.filter(a => !presentNums.has(a.num) && !excludeSet.has(a.num));
       const fallbackPool = ANIMALITOS_CATALOG.filter(a => !excludeSet.has(a.num));
 
       let backup2 = null;
-      if (absentBaseCandidates.length > 0) {
-        backup2 = absentBaseCandidates[(hourIdx + sorteoOffset) % absentBaseCandidates.length];
-      } else if (absentCandidates.length > 0) {
-        backup2 = absentCandidates[(hourIdx * 3 + sorteoOffset) % absentCandidates.length];
-      } else {
-        backup2 = fallbackPool[(hourIdx + sorteoOffset) % fallbackPool.length] || ANIMALITOS_CATALOG[14];
-      }
+      if (absentBaseCandidates.length > 0) backup2 = absentBaseCandidates[(hourIdx + sorteoOffset) % absentBaseCandidates.length];
+      else if (absentCandidates.length > 0) backup2 = absentCandidates[(hourIdx * 3 + sorteoOffset) % absentCandidates.length];
+      else backup2 = fallbackPool[(hourIdx + sorteoOffset) % fallbackPool.length] || ANIMALITOS_CATALOG[14];
 
-      const ruptureLabel = isTerminalSaturated
-        ? `ruptura por saturación en terminal ${lastTerminal} hacia su opuesto (${ruptureTerminal})`
-        : `confluencia de eje matricial (${vertex}) y secuencia horaria`;
+      const ruptureLabel = isTerminalSaturated ? `ruptura por saturación en terminal ${lastTerminal} hacia su opuesto (${ruptureTerminal})` : `confluencia de eje matricial (${vertex}) y secuencia horaria`;
+      const reason = `Tras registrar ${lastItem.num} (${lastItem.name}), el modelo proyecta ${ruptureLabel} para el bloque de las ${nextHour}.`;
 
-      const reason = `Tras registrar ${lastItem.num} (${lastItem.name}) en ${sorteoKey === 'lotto_activo' ? 'Lotto Activo' : 'La Granjita'}, el modelo proyecta ${ruptureLabel} para el bloque de las ${nextHour}.`;
-
-      return {
-        primary,
-        backups: [backup1, backup2],
-        reason
-      };
+      return { primary, backups: [backup1, backup2], reason };
     }
 
     function evaluateHitForNewResult(draw, incomingHour, incomingNum) {
       if (!draw.lastHour) return null;
       const normHour = normalizeHourLabel(incomingHour);
       const normalizedNum = normalizeAnimalNum(incomingNum);
-      const prevProjection = computeStatisticalProjection(
-        draw.key,
-        draw.lastNum,
-        normHour,
-        draw.history || []
-      );
+      const prevProjection = computeStatisticalProjection(draw.key, draw.lastNum, normHour, draw.history || []);
 
       let hitType = null;
-      if (prevProjection.primary && prevProjection.primary.num === normalizedNum) {
-        hitType = 'PRINCIPAL';
-      } else if (Array.isArray(prevProjection.backups)) {
+      if (prevProjection.primary && prevProjection.primary.num === normalizedNum) hitType = 'PRINCIPAL';
+      else if (Array.isArray(prevProjection.backups)) {
         const matchedIdx = prevProjection.backups.findIndex(b => b && b.num === normalizedNum);
-        if (matchedIdx !== -1) {
-          hitType = `RESPALDO #${matchedIdx + 1}`;
-        }
+        if (matchedIdx !== -1) hitType = `RESPALDO #${matchedIdx + 1}`;
       }
 
       if (!hitType) return null;
-
       const existingHits = Array.isArray(draw.hits) ? draw.hits : [];
       const hitId = `${getTodayStamp()}_${normHour}_${normalizedNum}`;
-      if (existingHits.some(h => h.id === hitId)) {
-        return existingHits.find(h => h.id === hitId);
-      }
+      if (existingHits.some(h => h.id === hitId)) return existingHits.find(h => h.id === hitId);
 
       const animal = getAnimalByNum(normalizedNum);
-      const hitRecord = {
-        id: hitId,
-        hour: normHour,
-        num: animal.num,
-        name: animal.name,
-        emoji: animal.emoji,
-        type: hitType
-      };
-
+      const hitRecord = { id: hitId, hour: normHour, num: animal.num, name: animal.name, emoji: animal.emoji, type: hitType };
       draw.hits = [hitRecord, ...existingHits].slice(0, 12);
       return hitRecord;
     }
@@ -732,9 +614,8 @@
         const proj = computeStatisticalProjection(draw.key, prev.num, curr.hour, historyBeforeCurr);
 
         let hitType = null;
-        if (proj.primary && proj.primary.num === curr.num) {
-          hitType = 'PRINCIPAL';
-        } else if (Array.isArray(proj.backups)) {
+        if (proj.primary && proj.primary.num === curr.num) hitType = 'PRINCIPAL';
+        else if (Array.isArray(proj.backups)) {
           const bIdx = proj.backups.findIndex(b => b && b.num === curr.num);
           if (bIdx !== -1) hitType = `RESPALDO #${bIdx + 1}`;
         }
@@ -744,28 +625,14 @@
           curr.hitType = hitType;
           if (!hitHoursSet.has(curr.hour)) {
             const animal = getAnimalByNum(curr.num);
-            draw.hits = [
-              {
-                id: `${getTodayStamp()}_${curr.hour}_${curr.num}`,
-                hour: curr.hour,
-                num: animal.num,
-                name: animal.name,
-                emoji: animal.emoji,
-                type: hitType
-              },
-              ...(draw.hits || [])
-            ].slice(0, 12);
+            draw.hits = [{ id: `${getTodayStamp()}_${curr.hour}_${curr.num}`, hour: curr.hour, num: animal.num, name: animal.name, emoji: animal.emoji, type: hitType }, ...(draw.hits || [])].slice(0, 12);
             hitHoursSet.add(curr.hour);
           }
         } else {
           curr.isHit = hitHoursSet.has(curr.hour);
         }
       }
-
-      if (sorted.length > 0 && hitHoursSet.has(sorted[0].hour)) {
-        sorted[0].isHit = true;
-      }
-
+      if (sorted.length > 0 && hitHoursSet.has(sorted[0].hour)) sorted[0].isHit = true;
       draw.history = sorted;
       return sorted;
     }
@@ -780,12 +647,7 @@
       const scriptTag = '<' + 'script[\\s\\S]*?<\\/' + 'script>';
       const styleTag = '<' + 'style[\\s\\S]*?<\\/' + 'style>';
       const anyTag = '<[^>]+>';
-      const cleanText = htmlText
-        .replace(new RegExp(scriptTag, 'gi'), ' ')
-        .replace(new RegExp(styleTag, 'gi'), ' ')
-        .replace(new RegExp(anyTag, 'g'), ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
+      const cleanText = htmlText.replace(new RegExp(scriptTag, 'gi'), ' ').replace(new RegExp(styleTag, 'gi'), ' ').replace(new RegExp(anyTag, 'g'), ' ').replace(/\s+/g, ' ').trim();
 
       const validNums = new Set(ANIMALITOS_CATALOG.map(a => a.num));
       const drawEntryRegex = /\b(00|[0-9]|1[0-9]|2[0-9]|3[0-6])\s+([A-Za-zÁÉÍÓÚáéíóúñÑ]+(?:\s+[A-Za-zÁÉÍÓÚáéíóúñÑ]+){0,2})\s+((?:0?[1-9]|1[0-2]):[0-5][0-9]\s*(?:AM|PM))\b/gi;
@@ -796,10 +658,7 @@
         for (const m of sliceText.matchAll(drawEntryRegex)) {
           const rawNum = normalizeAnimalNum(m[1]);
           const normalizedHour = normalizeHourLabel(m[3]);
-          if (validNums.has(rawNum) && !seenHours.has(normalizedHour)) {
-            seenHours.add(normalizedHour);
-            pairs.push({ hour: normalizedHour, num: rawNum });
-          }
+          if (validNums.has(rawNum) && !seenHours.has(normalizedHour)) { seenHours.add(normalizedHour); pairs.push({ hour: normalizedHour, num: rawNum }); }
         }
         return sortHistoryChronologically(pairs);
       }
@@ -809,19 +668,14 @@
 
       let laSlice = '';
       const laStart = lowerText.indexOf('resultados lotto activo');
-      if (laStart !== -1) {
-        laSlice = lgIdx > laStart ? cleanText.slice(laStart, lgIdx) : cleanText.slice(laStart, laStart + 2500);
-      } else if (lgIdx !== -1) {
-        laSlice = cleanText.slice(Math.max(0, lgIdx - 2500), lgIdx);
-      }
+      if (laStart !== -1) laSlice = lgIdx > laStart ? cleanText.slice(laStart, lgIdx) : cleanText.slice(laStart, laStart + 2500);
+      else if (lgIdx !== -1) laSlice = cleanText.slice(Math.max(0, lgIdx - 2500), lgIdx);
 
       let lgSlice = '';
       if (lgIdx !== -1) {
         const afterLg = cleanText.slice(lgIdx);
         const nextSectionMatch = afterLg.slice('resultados la granjita'.length).search(/\bResultados\s+[A-Za-z]/i);
-        lgSlice = nextSectionMatch !== -1
-          ? afterLg.slice(0, 'resultados la granjita'.length + nextSectionMatch)
-          : afterLg.slice(0, 2500);
+        lgSlice = nextSectionMatch !== -1 ? afterLg.slice(0, 'resultados la granjita'.length + nextSectionMatch) : afterLg.slice(0, 2500);
       }
 
       const laPairs = parseSliceMatches(laSlice);
@@ -858,27 +712,16 @@
           }
         }
 
-        if (isBeforeFirstDailyDrawVE()) {
-          renderAll();
-          if (!silent) showToast('⏳ Esperando primer sorteo del día (08:00 AM)');
-          return;
-        }
+        if (isBeforeFirstDailyDrawVE()) { renderAll(); if (!silent) showToast('⏳ Esperando primer sorteo del día (08:00 AM)'); return; }
 
         const targetUrl = 'https://lotoven.com/animalitos/';
-        const proxyCandidates = [
-          `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`,
-          `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`
-        ];
+        const proxyCandidates = [`https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`, `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`];
 
         let parsedData = null;
         for (const endpoint of proxyCandidates) {
           try {
             const resp = await fetch(endpoint, { cache: 'no-store' });
-            if (resp.ok) {
-              const html = await resp.text();
-              parsedData = parseResultsFromHtmlText(html);
-              if (parsedData) break;
-            }
+            if (resp.ok) { const html = await resp.text(); parsedData = parseResultsFromHtmlText(html); if (parsedData) break; }
           } catch (e) {}
         }
 
@@ -892,15 +735,8 @@
             if (latest.hour !== radarState.lotto_activo.lastHour || latest.num !== radarState.lotto_activo.lastNum) {
               const hit = evaluateHitForNewResult(radarState.lotto_activo, latest.hour, latest.num);
               if (hit) newHits.push(`🎯 ¡Acierto en LOTTO ACTIVO (${hit.hour}): ${hit.num} ${hit.name} [${hit.type}]!`);
-
-              radarState.lotto_activo.dateStamp = todayStamp;
-              radarState.lotto_activo.lastHour = latest.hour;
-              radarState.lotto_activo.nextHour = getNextHourLabel(latest.hour);
-              radarState.lotto_activo.lastNum = latest.num;
-              radarState.lotto_activo.drawId = `${todayStamp}_${radarState.lotto_activo.nextHour}`;
-              radarState.lotto_activo.history = mergedLa;
-              recomputeHistoryHits(radarState.lotto_activo);
-              updatedAny = true;
+              radarState.lotto_activo.dateStamp = todayStamp; radarState.lotto_activo.lastHour = latest.hour; radarState.lotto_activo.nextHour = getNextHourLabel(latest.hour); radarState.lotto_activo.lastNum = latest.num; radarState.lotto_activo.drawId = `${todayStamp}_${radarState.lotto_activo.nextHour}`; radarState.lotto_activo.history = mergedLa;
+              recomputeHistoryHits(radarState.lotto_activo); updatedAny = true;
             }
           }
           if (parsedData.lgPairs.length > 0) {
@@ -909,35 +745,20 @@
             if (latest.hour !== radarState.la_granjita.lastHour || latest.num !== radarState.la_granjita.lastNum) {
               const hit = evaluateHitForNewResult(radarState.la_granjita, latest.hour, latest.num);
               if (hit) newHits.push(`🎯 ¡Acierto en LA GRANJITA (${hit.hour}): ${hit.num} ${hit.name} [${hit.type}]!`);
-
-              radarState.la_granjita.dateStamp = todayStamp;
-              radarState.la_granjita.lastHour = latest.hour;
-              radarState.la_granjita.nextHour = getNextHourLabel(latest.hour);
-              radarState.la_granjita.lastNum = latest.num;
-              radarState.la_granjita.drawId = `${todayStamp}_${radarState.la_granjita.nextHour}`;
-              radarState.la_granjita.history = mergedLg;
-              recomputeHistoryHits(radarState.la_granjita);
-              updatedAny = true;
+              radarState.la_granjita.dateStamp = todayStamp; radarState.la_granjita.lastHour = latest.hour; radarState.la_granjita.nextHour = getNextHourLabel(latest.hour); radarState.la_granjita.lastNum = latest.num; radarState.la_granjita.drawId = `${todayStamp}_${radarState.la_granjita.nextHour}`; radarState.la_granjita.history = mergedLg;
+              recomputeHistoryHits(radarState.la_granjita); updatedAny = true;
             }
           }
         }
 
         if (updatedAny) {
-          await saveRadarState();
-          renderAll();
-          newHits.forEach(msg => showToast(msg));
+          await saveRadarState(); renderAll(); newHits.forEach(msg => showToast(msg));
           if (!silent) showToast('🔄 Nuevos resultados detectados y proyectados');
         } else if (!silent) {
-          recomputeHistoryHits(radarState.lotto_activo);
-          recomputeHistoryHits(radarState.la_granjita);
-          renderAll();
-          showToast('📡 Radar verificado y al día');
+          recomputeHistoryHits(radarState.lotto_activo); recomputeHistoryHits(radarState.la_granjita); renderAll(); showToast('📡 Radar verificado y al día');
         }
       } catch (e) {
-        if (!silent) {
-          renderAll();
-          showToast('📡 Radar operando en modo local');
-        }
+        if (!silent) { renderAll(); showToast('📡 Radar operando en modo local'); }
       } finally {
         if (iconEl) iconEl.classList.remove('animate-spin');
         isSyncingExternal = false;
@@ -951,14 +772,9 @@
         try {
           const parsedLocal = JSON.parse(savedLocal);
           if (parsedLocal && parsedLocal.lotto_activo && parsedLocal.la_granjita) {
-            radarState.lotto_activo = parsedLocal.lotto_activo.dateStamp === todayStamp
-              ? { ...radarState.lotto_activo, ...parsedLocal.lotto_activo, hits: parsedLocal.lotto_activo.hits || [] }
-              : createEmptyDrawForToday('lotto_activo', 'LOTTO ACTIVO', '🦁', 'amber', todayStamp);
-            radarState.la_granjita = parsedLocal.la_granjita.dateStamp === todayStamp
-              ? { ...radarState.la_granjita, ...parsedLocal.la_granjita, hits: parsedLocal.la_granjita.hits || [] }
-              : createEmptyDrawForToday('la_granjita', 'LA GRANJITA', '🐔', 'emerald', todayStamp);
-            recomputeHistoryHits(radarState.lotto_activo);
-            recomputeHistoryHits(radarState.la_granjita);
+            radarState.lotto_activo = parsedLocal.lotto_activo.dateStamp === todayStamp ? { ...radarState.lotto_activo, ...parsedLocal.lotto_activo, hits: parsedLocal.lotto_activo.hits || [] } : createEmptyDrawForToday('lotto_activo', 'LOTTO ACTIVO', '🦁', 'amber', todayStamp);
+            radarState.la_granjita = parsedLocal.la_granjita.dateStamp === todayStamp ? { ...radarState.la_granjita, ...parsedLocal.la_granjita, hits: parsedLocal.la_granjita.hits || [] } : createEmptyDrawForToday('la_granjita', 'LA GRANJITA', '🐔', 'emerald', todayStamp);
+            recomputeHistoryHits(radarState.lotto_activo); recomputeHistoryHits(radarState.la_granjita);
           }
         } catch (e) {}
       }
@@ -974,14 +790,27 @@
         const auth = getAuth(app);
         db = getFirestore(app);
 
-        try {
-          await signInAnonymously(auth);
-        } catch (authErr) {}
-
+        try { await signInAnonymously(auth); } catch (authErr) {}
+        
         isCloudReady = true;
-        cloudDocRef = isCanvasEnv
-          ? doc(db, 'artifacts', appId, 'public', 'data', 'ojo_horus_radar', 'live_draws')
-          : doc(db, 'ojo_horus_radar', 'live_draws');
+        
+        // Escuchar desbloqueos del usuario en Firestore
+        if (currentTgUser && currentTgUser.id) {
+          const userRef = doc(db, 'ojo_horus_users', String(currentTgUser.id));
+          onSnapshot(userRef, (docSnap) => {
+            if (docSnap.exists()) {
+              const data = docSnap.data();
+              if (data.unlocks && Array.isArray(data.unlocks)) {
+                const newUnlocks = {};
+                data.unlocks.forEach(id => newUnlocks[id] = true);
+                userUnlocks = newUnlocks;
+                renderDrawCards(); // Re-renderizar para mostrar desbloqueados
+              }
+            }
+          });
+        }
+
+        cloudDocRef = isCanvasEnv ? doc(db, 'artifacts', appId, 'public', 'data', 'ojo_horus_radar', 'live_draws') : doc(db, 'ojo_horus_radar', 'live_draws');
 
         onSnapshot(
           cloudDocRef,
@@ -994,53 +823,36 @@
                 const validLG = data.la_granjita.dateStamp === currentDay;
 
                 if (validLA) {
-                  if (data.lotto_activo.lastHour && data.lotto_activo.lastHour !== radarState.lotto_activo.lastHour) {
-                    evaluateHitForNewResult(radarState.lotto_activo, data.lotto_activo.lastHour, data.lotto_activo.lastNum);
-                  }
+                  if (data.lotto_activo.lastHour && data.lotto_activo.lastHour !== radarState.lotto_activo.lastHour) evaluateHitForNewResult(radarState.lotto_activo, data.lotto_activo.lastHour, data.lotto_activo.lastNum);
                   radarState.lotto_activo = { ...radarState.lotto_activo, ...data.lotto_activo, hits: data.lotto_activo.hits || radarState.lotto_activo.hits || [] };
                 } else {
                   radarState.lotto_activo = createEmptyDrawForToday('lotto_activo', 'LOTTO ACTIVO', '🦁', 'amber', currentDay);
                 }
 
                 if (validLG) {
-                  if (data.la_granjita.lastHour && data.la_granjita.lastHour !== radarState.la_granjita.lastHour) {
-                    evaluateHitForNewResult(radarState.la_granjita, data.la_granjita.lastHour, data.la_granjita.lastNum);
-                  }
+                  if (data.la_granjita.lastHour && data.la_granjita.lastHour !== radarState.la_granjita.lastHour) evaluateHitForNewResult(radarState.la_granjita, data.la_granjita.lastHour, data.la_granjita.lastNum);
                   radarState.la_granjita = { ...radarState.la_granjita, ...data.la_granjita, hits: data.la_granjita.hits || radarState.la_granjita.hits || [] };
                 } else {
                   radarState.la_granjita = createEmptyDrawForToday('la_granjita', 'LA GRANJITA', '🐔', 'emerald', currentDay);
                 }
 
-                recomputeHistoryHits(radarState.lotto_activo);
-                recomputeHistoryHits(radarState.la_granjita);
+                recomputeHistoryHits(radarState.lotto_activo); recomputeHistoryHits(radarState.la_granjita);
                 safeSetStorage(LOCAL_STATE_KEY, JSON.stringify(radarState));
-                updateCloudBadge('☁️ En Vivo (Sincronizado)');
-                renderAll();
+                updateCloudBadge('☁️ En Vivo (Sincronizado)'); renderAll();
               }
-            } else {
-              saveRadarState();
-            }
+            } else { saveRadarState(); }
           },
-          () => {
-            isCloudReady = false;
-            updateCloudBadge('● Modo Local Activo');
-          }
+          () => { isCloudReady = false; updateCloudBadge('● Modo Local Activo'); }
         );
       } catch (err) {
-        isCloudReady = false;
-        updateCloudBadge('● Modo Local Activo');
+        isCloudReady = false; updateCloudBadge('● Modo Local Activo');
       }
     }
 
     async function saveRadarState() {
       safeSetStorage(LOCAL_STATE_KEY, JSON.stringify(radarState));
       if (!isCloudReady || !cloudDocRef) return;
-      try {
-        await setDoc(cloudDocRef, {
-          ...radarState,
-          updatedAt: new Date().toISOString()
-        });
-      } catch (e) {}
+      try { await setDoc(cloudDocRef, { ...radarState, updatedAt: new Date().toISOString() }); } catch (e) {}
     }
 
     function updateCloudBadge(text) {
@@ -1051,9 +863,7 @@
     function renderAll() {
       renderDrawCards();
       const panel = document.getElementById('operator-panel');
-      if (panel && !panel.classList.contains('hidden')) {
-        populateOperatorControls();
-      }
+      if (panel && !panel.classList.contains('hidden')) populateOperatorControls();
     }
 
     function renderDrawCards() {
@@ -1072,7 +882,9 @@
 
         const lastAnimal = getAnimalByNum(effectiveLastNum);
         const projection = computeStatisticalProjection(draw.key, effectiveLastNum, effectiveNextHour, sortedHistory);
-        const unlocked = isProjectionUnlocked(draw.key, `${getTodayStamp()}_${effectiveNextHour}`);
+        const currentDrawId = `${getTodayStamp()}_${effectiveNextHour}`;
+        const unlocked = isProjectionUnlocked(draw.key, currentDrawId);
+        
         const drawHits = Array.isArray(draw.hits) ? draw.hits : [];
         const hitHoursSet = new Set(drawHits.map(h => normalizeHourLabel(h.hour)));
 
@@ -1080,137 +892,77 @@
         const borderAccent = isAmber ? 'border-amber-500/40' : 'border-emerald-500/40';
         const headerBg = isAmber ? 'from-amber-950/50 via-panel to-panel' : 'from-emerald-950/50 via-panel to-panel';
         const titleColor = isAmber ? 'text-amber-400' : 'text-emerald-400';
-        const badgeStyle = isAmber
-          ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
-          : 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30';
-        const ctaBtnStyle = isAmber
-          ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-amber-500/25'
-          : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-emerald-500/25';
+        const badgeStyle = isAmber ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' : 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30';
+        const ctaBtnStyle = isAmber ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-amber-500/25' : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-emerald-500/25';
 
         const historyBadges = sortedHistory.map(h => {
           const item = getAnimalByNum(h.num);
           const isHitItem = Boolean(h.isHit || hitHoursSet.has(normalizeHourLabel(h.hour)));
-          const badgeClasses = isHitItem
-            ? 'bg-emerald-950/80 border-emerald-500 text-emerald-200 ring-1 ring-emerald-400/50 shadow-sm shadow-emerald-500/20'
-            : 'bg-obsidian border-slate-800 text-slate-300';
+          const badgeClasses = isHitItem ? 'bg-emerald-950/80 border-emerald-500 text-emerald-200 ring-1 ring-emerald-400/50 shadow-sm shadow-emerald-500/20' : 'bg-obsidian border-slate-800 text-slate-300';
           const hourClasses = isHitItem ? 'text-emerald-300 font-bold' : 'text-slate-400';
           const numClasses = isHitItem ? 'text-emerald-300 font-extrabold' : 'text-white font-bold';
           const nameClasses = isHitItem ? 'text-emerald-100 font-semibold' : 'text-slate-300';
-
           return `
             <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[11px] transition ${badgeClasses}">
-              <span class="font-mono ${hourClasses}">${h.hour}:</span>
-              <span>${item.emoji}</span>
-              <span class="font-mono ${numClasses}">${item.num}</span>
-              <span class="${nameClasses} hidden sm:inline">${item.name}</span>
-              ${isHitItem ? '<span class="px-1 py-0.2 rounded bg-emerald-500/25 text-emerald-300 text-[9px] font-black">✓ ACIERTO</span>' : ''}
+              <span class="font-mono ${hourClasses}">${h.hour}:</span><span>${item.emoji}</span><span class="font-mono ${numClasses}">${item.num}</span><span class="${nameClasses} hidden sm:inline">${item.name}</span>${isHitItem ? '<span class="px-1 py-0.2 rounded bg-emerald-500/25 text-emerald-300 text-[9px] font-black">✓ ACIERTO</span>' : ''}
             </div>
           `;
         }).join('');
 
-        const hitsSectionHTML = drawHits.length > 0
-          ? `
+        const hitsSectionHTML = drawHits.length > 0 ? `
             <div class="bg-emerald-950/30 border border-emerald-500/35 rounded-xl p-3 space-y-2">
-              <div class="flex items-center justify-between">
-                <span class="text-[10px] font-extrabold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
-                  <span>🎯</span> <span>Aciertos Verificados (${drawHits.length})</span>
-                </span>
-                <span class="text-[10px] font-mono text-emerald-300/80">En Vivo</span>
-              </div>
+              <div class="flex items-center justify-between"><span class="text-[10px] font-extrabold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5"><span>🎯</span> <span>Aciertos Verificados (${drawHits.length})</span></span><span class="text-[10px] font-mono text-emerald-300/80">En Vivo</span></div>
               <div class="flex flex-wrap gap-1.5">
-                ${drawHits.slice(0, 6).map(hit => {
-                  const hitItem = getAnimalByNum(hit.num);
-                  return `
+                ${drawHits.slice(0, 6).map(hit => `
                   <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-950/80 border border-emerald-500/60 text-[11px]">
-                    <span class="font-mono text-emerald-300 font-bold">${hit.hour}</span>
-                    ${renderAnimalVisual(hitItem, 'w-5 h-5', 'text-xs')}
-                    <span class="font-mono font-extrabold text-emerald-200">${hit.num}</span>
-                    <span class="text-emerald-100 font-semibold">${hit.name}</span>
-                    <span class="px-1.5 py-0.2 rounded bg-emerald-500/25 text-emerald-300 text-[9px] font-bold">${hit.type}</span>
+                    <span class="font-mono text-emerald-300 font-bold">${hit.hour}</span>${renderAnimalVisual(getAnimalByNum(hit.num), 'w-5 h-5', 'text-xs')}<span class="font-mono font-extrabold text-emerald-200">${hit.num}</span><span class="text-emerald-100 font-semibold">${hit.name}</span><span class="px-1.5 py-0.2 rounded bg-emerald-500/25 text-emerald-300 text-[9px] font-bold">${hit.type}</span>
                   </div>
-                `;
-                }).join('')}
+                `).join('')}
               </div>
             </div>
-          `
-          : '';
+          ` : '';
 
-        const projectionSectionHTML = unlocked
-          ? `
+        const projectionSectionHTML = unlocked ? `
             <div class="bg-obsidian border ${borderAccent} rounded-2xl p-4 space-y-3 transition-all">
               <div class="flex items-center justify-between">
-                <div class="flex items-center gap-1.5">
-                  <span class="text-xs">🔓</span>
-                  <span class="text-[11px] font-extrabold uppercase tracking-wider ${titleColor}">
-                    Proyección Tendencia • ${effectiveNextHour}
-                  </span>
-                </div>
-                <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 font-mono text-[10px] font-extrabold text-emerald-300">
-                  ACTIVA
-                </span>
+                <div class="flex items-center gap-1.5"><span class="text-xs">🔓</span><span class="text-[11px] font-extrabold uppercase tracking-wider ${titleColor}">Proyección Tendencia • ${effectiveNextHour}</span></div>
+                <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 font-mono text-[10px] font-extrabold text-emerald-300">ACTIVA</span>
               </div>
-
               <div class="flex items-center justify-between bg-panel border border-slate-800 rounded-xl p-3">
                 <div class="flex items-center gap-3">
                   ${renderAnimalVisual(projection.primary, 'w-14 h-14', 'text-3xl')}
                   <div>
                     <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Tendencia Principal</div>
-                    <div class="font-extrabold text-base sm:text-lg text-white">
-                      <span class="font-mono ${titleColor}">#${projection.primary.num}</span> • ${projection.primary.name}
-                    </div>
+                    <div class="font-extrabold text-base sm:text-lg text-white"><span class="font-mono ${titleColor}">#${projection.primary.num}</span> • ${projection.primary.name}</div>
                     <div class="text-[11px] text-slate-400">Sector: ${projection.primary.sector}</div>
                   </div>
                 </div>
               </div>
-
               <div class="grid grid-cols-2 gap-2">
                 ${projection.backups.map((b, i) => `
                   <div class="bg-panel/80 border border-slate-800/90 rounded-xl px-3 py-2 flex items-center gap-2.5">
                     ${renderAnimalVisual(b, 'w-10 h-10', 'text-xl')}
-                    <div>
-                      <div class="text-[9px] uppercase font-bold text-slate-400">Respaldo #${i + 1}</div>
-                      <div class="text-xs font-extrabold text-slate-100">
-                        <span class="font-mono ${titleColor}">${b.num}</span> ${b.name}
-                      </div>
-                    </div>
+                    <div><div class="text-[9px] uppercase font-bold text-slate-400">Respaldo #${i + 1}</div><div class="text-xs font-extrabold text-slate-100"><span class="font-mono ${titleColor}">${b.num}</span> ${b.name}</div></div>
                   </div>
                 `).join('')}
               </div>
-
-              <p class="text-[11px] text-slate-300 bg-slate-900/70 border border-slate-800 rounded-xl px-3 py-2 leading-relaxed">
-                📈 <strong>Análisis:</strong> ${projection.reason}
-              </p>
+              <p class="text-[11px] text-slate-300 bg-slate-900/70 border border-slate-800 rounded-xl px-3 py-2 leading-relaxed">📈 <strong>Análisis:</strong> ${projection.reason}</p>
             </div>
-          `
-          : `
+          ` : `
             <div class="relative bg-obsidian border border-slate-800 rounded-2xl p-4 overflow-hidden">
               <div class="select-none blur-[6px] opacity-35 pointer-events-none space-y-3" aria-hidden="true">
-                <div class="flex justify-between">
-                  <span class="text-xs font-bold">PROYECCIÓN ESTADÍSTICA ${effectiveNextHour}</span>
-                  <span class="text-xs font-mono">ACTIVA</span>
-                </div>
+                <div class="flex justify-between"><span class="text-xs font-bold">PROYECCIÓN ESTADÍSTICA ${effectiveNextHour}</span><span class="text-xs font-mono">ACTIVA</span></div>
                 <div class="h-14 bg-slate-800 rounded-xl"></div>
-                <div class="grid grid-cols-2 gap-2">
-                  <div class="h-10 bg-slate-800 rounded-xl"></div>
-                  <div class="h-10 bg-slate-800 rounded-xl"></div>
-                </div>
+                <div class="grid grid-cols-2 gap-2"><div class="h-10 bg-slate-800 rounded-xl"></div><div class="h-10 bg-slate-800 rounded-xl"></div></div>
               </div>
-
               <div class="absolute inset-0 bg-slate-950/75 backdrop-blur-[2px] flex flex-col items-center justify-center p-4 text-center space-y-2.5">
-                <div class="w-11 h-11 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center text-xl shadow-lg">
-                  🔒
-                </div>
+                <div class="w-11 h-11 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center text-xl shadow-lg">🔒</div>
                 <div>
-                  <h4 class="font-extrabold text-xs sm:text-sm text-white">
-                    Proyección de <span class="${titleColor}">${effectiveNextHour}</span> Lista
-                  </h4>
-                  <p class="text-[11px] text-slate-400 max-w-xs mx-auto mt-0.5">
-                    Cálculo generado para el bloque <strong class="text-slate-200">${effectiveNextHour}</strong>. Desbloquea gratis viendo un breve anuncio.
-                  </p>
+                  <h4 class="font-extrabold text-xs sm:text-sm text-white">Proyección de <span class="${titleColor}">${effectiveNextHour}</span> Lista</h4>
+                  <p class="text-[11px] text-slate-400 max-w-xs mx-auto mt-0.5">El patrón ha detectado un movimiento clave para este bloque. Desbloquea gratis viendo un breve anuncio.</p>
                 </div>
                 <button onclick="openAdUnlockModal('${draw.key}')" class="px-4 py-2.5 rounded-xl font-extrabold text-xs shadow-lg transition flex items-center gap-2 ${ctaBtnStyle}">
-                  <span>📺</span>
-                  <span>Ver Anuncio y Desbloquear (${effectiveNextHour})</span>
+                  <span>📺</span><span>Ver Anuncio y Desbloquear (${effectiveNextHour})</span>
                 </button>
               </div>
             </div>
@@ -1226,43 +978,21 @@
                   <p class="text-[11px] text-slate-400">Último sorteo: <strong class="font-mono text-slate-200">${effectiveLastHour || 'Esperando sorteo...'}</strong></p>
                 </div>
               </div>
-              <span class="px-2.5 py-1 rounded-full border text-[10px] font-mono font-bold ${badgeStyle}">
-                Sig: ${effectiveNextHour}
-              </span>
+              <span class="px-2.5 py-1 rounded-full border text-[10px] font-mono font-bold ${badgeStyle}">Sig: ${effectiveNextHour}</span>
             </div>
-
             <div class="p-4 space-y-4">
               <div class="bg-obsidian/90 border border-slate-800/90 rounded-2xl p-3.5 flex items-center justify-between gap-3">
                 <div class="flex items-center gap-3.5">
-                  ${hasResult
-                    ? renderAnimalVisual(lastAnimal, 'w-16 h-16', 'text-4xl')
-                    : `<div class="w-16 h-16 rounded-full bg-gradient-to-br from-slate-800 to-slate-950 border border-slate-700 flex items-center justify-center text-4xl shadow-md shrink-0">⏳</div>`}
+                  ${hasResult ? renderAnimalVisual(lastAnimal, 'w-16 h-16', 'text-4xl') : `<div class="w-16 h-16 rounded-full bg-gradient-to-br from-slate-800 to-slate-950 border border-slate-700 flex items-center justify-center text-4xl shadow-md shrink-0">⏳</div>`}
                   <div>
-                    <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                      ${hasResult ? `Resultado Oficial • ${effectiveLastHour}` : 'Esperando primer resultado del día'}
-                    </div>
-                    <div class="font-black text-xl sm:text-2xl text-white tracking-tight mt-0.5">
-                      ${hasResult
-                        ? `<span class="font-mono ${titleColor}">${lastAnimal.num}</span> — ${lastAnimal.name}`
-                        : `<span class="text-slate-400 text-base">Sincronizando...</span>`}
-                    </div>
-                    <div class="text-[11px] text-slate-400">${hasResult ? `Categoría: ${lastAnimal.sector}` : 'Pulsa Auto-Sync o espera el sorteo oficial'}</div>
+                    <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">${hasResult ? `Resultado Oficial • ${effectiveLastHour}` : 'Esperando primer resultado del día'}</div>
+                    <div class="font-black text-xl sm:text-2xl text-white tracking-tight mt-0.5">${hasResult ? `<span class="font-mono ${titleColor}">${lastAnimal.num}</span> — ${lastAnimal.name}` : `<span class="text-slate-400 text-base">Sincronizando...</span>`}</div>
+                    <div class="text-[11px] text-slate-400">${hasResult ? `Categoría: ${lastAnimal.sector}` : 'Espera el sorteo oficial'}</div>
                   </div>
                 </div>
               </div>
-
-              ${historyBadges ? `
-                <div class="space-y-1.5">
-                  <div class="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    <span>Secuencia Reciente (08:00 AM - 07:00 PM):</span>
-                    <span class="text-emerald-400/90 normal-case font-medium">Verde = Acierto</span>
-                  </div>
-                  <div class="flex flex-wrap gap-1.5">${historyBadges}</div>
-                </div>
-              ` : ''}
-
+              ${historyBadges ? `<div class="space-y-1.5"><div class="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-slate-400"><span>Secuencia Reciente:</span><span class="text-emerald-400/90 normal-case font-medium">Verde = Acierto</span></div><div class="flex flex-wrap gap-1.5">${historyBadges}</div></div>` : ''}
               ${hitsSectionHTML}
-
               ${projectionSectionHTML}
             </div>
           </article>
@@ -1271,7 +1001,6 @@
     }
 
     let activeUnlockTargetKey = null;
-    let adTimerInterval = null;
 
     function openAdUnlockModal(sorteoKey) {
       const draw = radarState[sorteoKey];
@@ -1280,72 +1009,55 @@
       activeUnlockTargetKey = sorteoKey;
       const effectiveNextHour = draw.lastHour ? getNextHourLabel(draw.lastHour) : (draw.nextHour || DRAW_HOURS[0]);
 
-      if (typeof window.show_10088762 === 'function') {
-        try {
-          window.show_10088762().then(() => {
-            completeAdUnlock();
-          }).catch(() => {});
-        } catch (e) {}
-      }
-
       const modal = document.getElementById('ad-unlock-modal');
       const titleEl = document.getElementById('ad-modal-title');
       const badgeEl = document.getElementById('ad-modal-badge');
       const targetLabel = document.getElementById('ad-modal-target-label');
+      const loadingState = document.getElementById('ad-loading-state');
       const confirmBtn = document.getElementById('ad-confirm-btn');
-      const countdownEl = document.getElementById('ad-countdown-text');
-      const progressBar = document.getElementById('ad-progress-bar');
 
       badgeEl.textContent = `${draw.title} • Bloque ${effectiveNextHour}`;
       titleEl.textContent = `Desbloquear Proyección ${effectiveNextHour}`;
       targetLabel.textContent = `${draw.title} (${effectiveNextHour})`;
-
-      const totalSeconds = CONFIG_PRODUCCION.webAdDurationSeconds || 5;
-      let secondsLeft = totalSeconds;
-      countdownEl.textContent = `${secondsLeft}s`;
-      progressBar.style.width = '0%';
-      confirmBtn.disabled = true;
-      confirmBtn.className = 'px-5 py-2.5 rounded-xl bg-slate-700 text-slate-400 font-extrabold text-xs transition cursor-not-allowed';
-      confirmBtn.textContent = `⏳ Espera ${secondsLeft}s...`;
-
+      
+      loadingState.classList.remove('hidden');
+      confirmBtn.classList.add('hidden');
       modal.classList.remove('hidden');
 
-      if (adTimerInterval) clearInterval(adTimerInterval);
-      adTimerInterval = setInterval(() => {
-        secondsLeft -= 1;
-        const pct = Math.min(100, ((totalSeconds - secondsLeft) / totalSeconds) * 100);
-        progressBar.style.width = `${pct}%`;
-
-        if (secondsLeft > 0) {
-          countdownEl.textContent = `${secondsLeft}s`;
-          confirmBtn.textContent = `⏳ Espera ${secondsLeft}s...`;
-        } else {
-          clearInterval(adTimerInterval);
-          adTimerInterval = null;
-          countdownEl.textContent = '¡Listo!';
-          confirmBtn.disabled = false;
-          confirmBtn.className = 'px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs shadow-lg shadow-emerald-500/25 transition cursor-pointer';
-          confirmBtn.textContent = '🔓 Ver Proyección Ahora';
+      // Lógica estricta de Monetag (Solo desbloquea si el SDK devuelve éxito)
+      if (typeof window.show_10088762 === 'function') {
+        try {
+          window.show_10088762().then(() => {
+            completeAdUnlock();
+          }).catch((err) => {
+            showToast('⚠️ Debes ver el anuncio completo para desbloquear.');
+            closeAdModal();
+          });
+        } catch (e) {
+          showToast('⚠️ Error al cargar el anuncio. Intenta de nuevo.');
+          closeAdModal();
         }
-      }, 1000);
+      } else {
+        showToast('⚠️ El anuncio no está disponible en este momento.');
+        closeAdModal();
+      }
     }
 
     function closeAdModal() {
-      if (adTimerInterval) {
-        clearInterval(adTimerInterval);
-        adTimerInterval = null;
-      }
       activeUnlockTargetKey = null;
       document.getElementById('ad-unlock-modal')?.classList.add('hidden');
     }
 
-    function completeAdUnlock() {
+    async function completeAdUnlock() {
       if (!activeUnlockTargetKey) return;
       const draw = radarState[activeUnlockTargetKey];
       if (!draw) return;
 
       const effectiveNextHour = draw.lastHour ? getNextHourLabel(draw.lastHour) : (draw.nextHour || DRAW_HOURS[0]);
-      setProjectionUnlocked(draw.key, `${getTodayStamp()}_${effectiveNextHour}`);
+      const currentDrawId = `${getTodayStamp()}_${effectiveNextHour}`;
+      
+      await setProjectionUnlocked(draw.key, currentDrawId);
+      
       closeAdModal();
       renderDrawCards();
       showToast(`🔓 Proyección de ${draw.title} (${effectiveNextHour}) desbloqueada`);
@@ -1355,19 +1067,12 @@
       const panel = document.getElementById('operator-panel');
       if (!panel) return;
       panel.classList.toggle('hidden');
-      if (!panel.classList.contains('hidden')) {
-        populateOperatorControls();
-      }
+      if (!panel.classList.contains('hidden')) populateOperatorControls();
     }
 
     function populateOperatorControls() {
-      const animalOptions = ANIMALITOS_CATALOG
-        .map(a => `<option value="${a.num}">${a.num} - ${a.name} ${a.emoji}</option>`)
-        .join('');
-
-      const hourOptions = DRAW_HOURS
-        .map(h => `<option value="${h}">${h}</option>`)
-        .join('');
+      const animalOptions = ANIMALITOS_CATALOG.map(a => `<option value="${a.num}">${a.num} - ${a.name} ${a.emoji}</option>`).join('');
+      const hourOptions = DRAW_HOURS.map(h => `<option value="${h}">${h}</option>`).join('');
 
       ['la', 'lg'].forEach(prefix => {
         const key = prefix === 'la' ? 'lotto_activo' : 'la_granjita';
@@ -1376,17 +1081,9 @@
         const numSel = document.getElementById(`op-num-${prefix}`);
         const statusEl = document.getElementById(`op-status-${prefix}`);
 
-        if (hourSel) {
-          hourSel.innerHTML = hourOptions;
-          hourSel.value = draw.lastHour || DRAW_HOURS[0];
-        }
-        if (numSel) {
-          numSel.innerHTML = animalOptions;
-          numSel.value = normalizeAnimalNum(draw.lastNum);
-        }
-        if (statusEl) {
-          statusEl.textContent = draw.lastHour ? `Último: ${draw.lastHour} (${draw.lastNum})` : 'Sin sorteo registrado';
-        }
+        if (hourSel) { hourSel.innerHTML = hourOptions; hourSel.value = draw.lastHour || DRAW_HOURS[0]; }
+        if (numSel) { numSel.innerHTML = animalOptions; numSel.value = normalizeAnimalNum(draw.lastNum); }
+        if (statusEl) statusEl.textContent = draw.lastHour ? `Último: ${draw.lastHour} (${draw.lastNum})` : 'Sin sorteo registrado';
       });
     }
 
@@ -1402,20 +1099,11 @@
       const normalizedNewNum = normalizeAnimalNum(newNum);
       const hit = evaluateHitForNewResult(draw, newHour, normalizedNewNum);
 
-      const updatedList = sortHistoryChronologically([
-        ...(draw.history || []),
-        { hour: newHour, num: normalizedNewNum, isHit: Boolean(hit) }
-      ]);
+      const updatedList = sortHistoryChronologically([...(draw.history || []), { hour: newHour, num: normalizedNewNum, isHit: Boolean(hit) }]);
       const latestItem = updatedList[updatedList.length - 1] || { hour: newHour, num: normalizedNewNum };
       const nextHour = getNextHourLabel(latestItem.hour);
-      const newDrawId = `${todayStamp}_${nextHour}`;
 
-      draw.dateStamp = todayStamp;
-      draw.history = updatedList;
-      draw.lastHour = latestItem.hour;
-      draw.nextHour = nextHour;
-      draw.lastNum = latestItem.num;
-      draw.drawId = newDrawId;
+      draw.dateStamp = todayStamp; draw.history = updatedList; draw.lastHour = latestItem.hour; draw.nextHour = nextHour; draw.lastNum = latestItem.num; draw.drawId = `${todayStamp}_${nextHour}`;
       recomputeHistoryHits(draw);
 
       await saveRadarState();
@@ -1423,27 +1111,14 @@
       renderDrawCards();
 
       const animal = getAnimalByNum(normalizedNewNum);
-      if (hit) {
-        showToast(`🎯 ¡ACIERTO EN ${draw.title} (${hit.hour}): ${hit.num} ${hit.name} [${hit.type}]!`);
-      } else {
-        showToast(`⚡ ${draw.title}: ${animal.num} (${animal.name}) publicado. Candado reiniciado para ${nextHour}.`);
-      }
+      if (hit) showToast(`🎯 ¡ACIERTO EN ${draw.title} (${hit.hour}): ${hit.num} ${hit.name} [${hit.type}]!`);
+      else showToast(`⚡ ${draw.title}: ${animal.num} (${animal.name}) publicado.`);
     }
 
     function resetAllUnlocksForTest() {
-      Object.keys(memoryUnlocks).forEach(k => delete memoryUnlocks[k]);
-      try {
-        if (window.localStorage) {
-          const keysToRemove = [];
-          for (let i = 0; i < window.localStorage.length; i++) {
-            const k = window.localStorage.key(i);
-            if (k && k.startsWith('unlocked_')) keysToRemove.push(k);
-          }
-          keysToRemove.forEach(k => window.localStorage.removeItem(k));
-        }
-      } catch (e) {}
+      userUnlocks = {};
       renderDrawCards();
-      showToast('🔒 Candados reiniciados para ambos sorteos');
+      showToast('🔒 Candados reiniciados en pantalla');
     }
 
     function showToast(msg) {
@@ -1451,53 +1126,30 @@
       if (!container) return;
       const toast = document.createElement('div');
       toast.className = 'pointer-events-auto bg-slate-900/95 border border-amber-500/50 text-slate-100 px-4 py-3 rounded-xl shadow-2xl text-xs font-semibold transition-all duration-300';
-      toast.textContent = msg;
-      container.appendChild(toast);
-      setTimeout(() => {
-        toast.style.opacity = '0';
-        setTimeout(() => toast.remove(), 300);
-      }, 3600);
+      toast.textContent = msg; container.appendChild(toast);
+      setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3600);
     }
 
     function updateLiveClock() {
       const clockEl = document.getElementById('live-clock');
       const dateEl = document.getElementById('live-date');
       const now = new Date();
-      if (dateEl) {
-        dateEl.textContent = now.toLocaleDateString('es-VE', {
-          timeZone: 'America/Caracas',
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric'
-        });
-      }
-      if (clockEl) {
-        clockEl.textContent = now.toLocaleTimeString('es-VE', {
-          timeZone: 'America/Caracas',
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit'
-        });
-      }
-      if (ensureDailyResetIfNeeded()) {
-        renderAll();
-      }
+      if (dateEl) dateEl.textContent = now.toLocaleDateString('es-VE', { timeZone: 'America/Caracas', day: '2-digit', month: '2-digit', year: 'numeric' });
+      if (clockEl) clockEl.textContent = now.toLocaleTimeString('es-VE', { timeZone: 'America/Caracas', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      if (ensureDailyResetIfNeeded()) renderAll();
     }
 
     function initTelegramMiniApp() {
       try {
         if (window.Telegram && window.Telegram.WebApp) {
           const tg = window.Telegram.WebApp;
-          tg.ready();
-          tg.expand();
-          const tgUser = tg.initDataUnsafe?.user;
-          if (tgUser && tgUser.id) {
-            safeSetStorage('tg_subscriber_id', String(tgUser.id));
-            safeSetStorage('tg_subscriber_name', tgUser.first_name || '');
-            safeSetStorage('tg_subscriber_username', tgUser.username || '');
-            if (safeGetStorage('tg_push_enabled') === '1') {
-              registerTelegramSubscriber(tgUser, true);
-            }
+          tg.ready(); tg.expand();
+          currentTgUser = tg.initDataUnsafe?.user;
+          if (currentTgUser && currentTgUser.id) {
+            safeSetStorage('tg_subscriber_id', String(currentTgUser.id));
+            safeSetStorage('tg_subscriber_name', currentTgUser.first_name || '');
+            safeSetStorage('tg_subscriber_username', currentTgUser.username || '');
+            if (safeGetStorage('tg_push_enabled') === '1') registerTelegramSubscriber(currentTgUser, true);
           }
         }
       } catch (e) {}
@@ -1513,55 +1165,52 @@
       if (isEnabled) {
         btn.className = 'w-full sm:w-auto px-4 py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/50 text-emerald-300 font-extrabold text-xs transition flex items-center justify-center gap-2 shrink-0';
         btn.innerHTML = '<span>✅ Notificaciones Activadas (Toca para silenciar)</span>';
-        if (subtitle) {
-          subtitle.textContent = 'Tus alertas están activas. El bot te avisará en los horarios programados.';
-        }
+        if (subtitle) subtitle.textContent = 'Tus alertas están activas. El bot te avisará en los horarios programados.';
       } else {
         btn.className = 'w-full sm:w-auto px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs shadow-lg shadow-amber-500/20 transition flex items-center justify-center gap-2 shrink-0';
         btn.innerHTML = '<span>🔔 Activar notificaciones push para no perderte ningún sorteo</span>';
-        if (subtitle) {
-          subtitle.textContent = 'Recibe avisos directos en tu Telegram antes de los bloques clave del día.';
-        }
+        if (subtitle) subtitle.textContent = 'Recibe avisos directos en tu Telegram antes de los bloques clave del día.';
       }
     }
 
     async function toggleUserPushNotifications() {
       const currentlyEnabled = safeGetStorage('tg_push_enabled') === '1';
       const nextState = !currentlyEnabled;
-      safeSetStorage('tg_push_enabled', nextState ? '1' : '0');
-      updatePushButtonUI();
-
-      let tgUser = null;
-      try {
-        tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user || null;
-      } catch (e) {}
-
-      const storedChatId = tgUser?.id ? String(tgUser.id) : safeGetStorage('tg_subscriber_id');
-
-      if (!storedChatId) {
-        if (nextState) {
-          showToast('📲 Abre esta Mini App desde tu bot de Telegram para vincular tu chat automáticamente.');
-        } else {
-          showToast('🔕 Notificaciones desactivadas en este dispositivo.');
-        }
-        return;
-      }
-
-      const payloadUser = {
-        id: storedChatId,
-        first_name: tgUser?.first_name || safeGetStorage('tg_subscriber_name') || '',
-        username: tgUser?.username || safeGetStorage('tg_subscriber_username') || ''
-      };
-
-      await registerTelegramSubscriber(payloadUser, nextState);
-      if (nextState) {
-        showToast('🔔 ¡Listo! Notificaciones push activadas en tu Telegram.');
+      
+      // Pedir permiso oficial de Telegram
+      if (nextState && window.Telegram?.WebApp?.requestWriteAccess) {
+        window.Telegram.WebApp.requestWriteAccess((granted) => {
+          if (!granted) {
+            showToast('⚠️ Debes permitir las notificaciones en Telegram.');
+            return;
+          }
+          finalizeTogglePush(nextState);
+        });
       } else {
-        showToast('🔕 Notificaciones silenciadas. Puedes volver a activarlas cuando quieras.');
+        finalizeTogglePush(nextState);
       }
     }
 
-    // Guarda o actualiza el estado del usuario de Telegram en Firestore
+    async function finalizeTogglePush(nextState) {
+      safeSetStorage('tg_push_enabled', nextState ? '1' : '0');
+      updatePushButtonUI();
+
+      let tgUser = currentTgUser;
+      const storedChatId = tgUser?.id ? String(tgUser.id) : safeGetStorage('tg_subscriber_id');
+
+      if (!storedChatId) {
+        if (nextState) showToast('📲 Abre esta Mini App desde tu bot de Telegram para vincular tu chat automáticamente.');
+        else showToast('🔕 Notificaciones desactivadas en este dispositivo.');
+        return;
+      }
+
+      const payloadUser = { id: storedChatId, first_name: tgUser?.first_name || safeGetStorage('tg_subscriber_name') || '', username: tgUser?.username || safeGetStorage('tg_subscriber_username') || '' };
+      await registerTelegramSubscriber(payloadUser, nextState);
+      
+      if (nextState) showToast('🔔 ¡Listo! Notificaciones push activadas en tu Telegram.');
+      else showToast('🔕 Notificaciones silenciadas.');
+    }
+
     async function registerTelegramSubscriber(tgUser, active = true) {
       if (!tgUser || !tgUser.id) return;
       const chatId = String(tgUser.id);
@@ -1571,44 +1220,31 @@
         if (!isCloudReady || !db) return false;
         try {
           const subRef = doc(db, 'ojo_horus_subscribers', chatId);
-          await setDoc(subRef, {
-            chatId,
-            firstName: tgUser.first_name || '',
-            username: tgUser.username || '',
-            active: Boolean(active),
-            updatedAt: new Date().toISOString()
-          }, { merge: true });
+          await setDoc(subRef, { chatId, firstName: tgUser.first_name || '', username: tgUser.username || '', active: Boolean(active), updatedAt: new Date().toISOString() }, { merge: true });
           return true;
-        } catch (e) {
-          return false;
-        }
+        } catch (e) { return false; }
       };
 
-      if (!(await trySave())) {
-        setTimeout(() => { trySave(); }, 3500);
-      }
+      if (!(await trySave())) setTimeout(() => { trySave(); }, 3500);
     }
 
     function registerServiceWorker() {
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./service-worker.js').catch(() => {});
-      }
+      if ('serviceWorker' in navigator) navigator.serviceWorker.register('./service-worker.js').catch(() => {});
     }
 
     Object.assign(window, {
-      toggleOperatorPanel,
-      publishDrawResult,
-      resetAllUnlocksForTest,
-      openAdUnlockModal,
-      closeAdModal,
-      completeAdUnlock,
-      syncExternalSourceNow,
-      toggleUserPushNotifications
+      toggleOperatorPanel, publishDrawResult, resetAllUnlocksForTest, openAdUnlockModal, closeAdModal, completeAdUnlock, syncExternalSourceNow, toggleUserPushNotifications
     });
 
     registerServiceWorker();
 
     window.addEventListener('DOMContentLoaded', () => {
+      // Mostrar panel admin solo si la URL tiene ?admin=true
+      if (window.location.search.includes('admin=true')) {
+        const adminPanel = document.getElementById('admin-controls');
+        if (adminPanel) adminPanel.style.display = 'flex';
+      }
+
       initTelegramMiniApp();
       updateLiveClock();
       setInterval(updateLiveClock, 1000);
