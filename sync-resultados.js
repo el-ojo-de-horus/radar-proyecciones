@@ -343,6 +343,113 @@ function parseResultsFromHtml(htmlText) {
   };
 }
 
+// Horarios de notificación en Venezuela (HH:MM en formato 24h)
+// Se envían 10 minutos antes de cada sorteo (10 AM, 1 PM, 4 PM y 7 PM) con las horas exactas del bloque siguiente
+const SCHEDULED_NOTIFICATIONS = [
+  {
+    id: 'pre_1000',
+    hour: 9,
+    minute: 50,
+    label: '10:00 AM',
+    text: '⚠️ El resultado de las 10:00 AM está por salir. Las proyecciones de las 11:00 AM ya están listas en la App. Entra ahora y desbloquéala antes de que cambie el patrón.'
+  },
+  {
+    id: 'pre_1300',
+    hour: 12,
+    minute: 50,
+    label: '01:00 PM',
+    text: '⚠️ El resultado de las 01:00 PM está por salir. Las proyecciones de las 02:00 PM ya están listas en la App. Entra ahora y desbloquéala antes de que cambie el patrón.'
+  },
+  {
+    id: 'pre_1600',
+    hour: 15,
+    minute: 50,
+    label: '04:00 PM',
+    text: '⚠️ El resultado de las 04:00 PM está por salir. Las proyecciones de las 05:00 PM ya están listas en la App. Entra ahora y desbloquéala antes de que cambie el patrón.'
+  },
+  {
+    id: 'pre_1900',
+    hour: 18,
+    minute: 50,
+    label: '07:00 PM',
+    text: '⚠️ El resultado de las 07:00 PM está por salir. Las proyecciones de cierre ya están listas en la App. Entra ahora y desbloquéala antes de que cambie el patrón.'
+  }
+];
+
+async function sendTelegramMessage(botToken, chatId, text) {
+  const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      chat_id: chatId,
+      text,
+      parse_mode: 'HTML',
+      disable_web_page_preview: true
+    })
+  });
+  const data = await resp.json();
+  return data;
+}
+
+async function processScheduledTelegramAlerts(todayStamp, veNow) {
+  const botToken = process.env.TELEGRAM_BOT_TOKEN;
+  if (!botToken) {
+    console.log('TELEGRAM_BOT_TOKEN no configurado; omitiendo avisos a usuarios.');
+    return;
+  }
+
+  const nowMinutes = veNow.getHours() * 60 + veNow.getMinutes();
+  const notifStateRef = db.doc('ojo_horus_radar/telegram_notifications');
+  const notifSnap = await notifStateRef.get();
+  const sentToday = (notifSnap.exists && notifSnap.data()?.dateStamp === todayStamp)
+    ? (notifSnap.data()?.sentIds || [])
+    : [];
+
+  // Buscar un horario programado dentro de una ventana de 10 minutos que aún no se haya enviado hoy
+  const dueSlot = SCHEDULED_NOTIFICATIONS.find(slot => {
+    if (sentToday.includes(slot.id)) return false;
+    const slotMinutes = slot.hour * 60 + slot.minute;
+    return nowMinutes >= slotMinutes && nowMinutes <= slotMinutes + 10;
+  });
+
+  if (!dueSlot) return;
+
+  const subsSnap = await db.collection('ojo_horus_subscribers').where('active', '==', true).get();
+  if (subsSnap.empty) {
+    console.log('No hay usuarios suscritos activos todavía.');
+    return;
+  }
+
+  const miniAppUrl = process.env.MINI_APP_URL || '';
+  const fullMessage = miniAppUrl
+    ? `👑 <b>EL OJO DE HORUS</b> 🔥\n\n${dueSlot.text}\n\n👉 <a href="${miniAppUrl}">Abrir Radar en Vivo</a>`
+    : `👑 <b>EL OJO DE HORUS</b> 🔥\n\n${dueSlot.text}`;
+
+  let delivered = 0;
+  for (const userDoc of subsSnap.docs) {
+    const sub = userDoc.data();
+    if (!sub?.chatId) continue;
+    try {
+      const result = await sendTelegramMessage(botToken, sub.chatId, fullMessage);
+      if (result.ok) {
+        delivered += 1;
+      } else if (result.error_code === 403) {
+        // El usuario bloqueó el bot: desactivar para no reintentar
+        await userDoc.ref.set({ active: false }, { merge: true });
+      }
+    } catch (e) {}
+  }
+
+  await notifStateRef.set({
+    dateStamp: todayStamp,
+    sentIds: [...sentToday, dueSlot.id],
+    lastSentAt: new Date().toISOString(),
+    lastDeliveredCount: delivered
+  });
+  console.log(`Aviso programado (${dueSlot.id}) enviado a ${delivered} usuarios.`);
+}
+
 async function run() {
   const docRef = db.doc('ojo_horus_radar/live_draws');
   const snap = await docRef.get();
@@ -446,6 +553,8 @@ async function run() {
   } else {
     console.log('Sin cambios respecto a Firestore.');
   }
+
+  await processScheduledTelegramAlerts(todayStamp, veNow);
 }
 
 run().catch((err) => {
