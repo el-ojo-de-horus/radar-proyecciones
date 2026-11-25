@@ -180,6 +180,34 @@
     <!-- TARJETAS INDEPENDIENTES POR SORTEO -->
     <section id="draws-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-5"></section>
 
+    <!-- SECCIÓN VIP Y ALIANZAS -->
+    <section class="bg-gradient-to-r from-slate-900 via-amber-950/40 to-slate-900 border border-amber-500/30 rounded-2xl p-5 mt-6 shadow-2xl">
+      <div class="text-center mb-4">
+        <h2 class="text-lg font-black text-white flex items-center justify-center gap-2">
+          <span>🌟</span> ¡ÚNETE A LA FAMILIA DE GANADORES! <span>🌟</span>
+        </h2>
+        <p class="text-xs text-slate-300 mt-1">Maximiza tus oportunidades con nuestros planes exclusivos o haz alianzas comerciales.</p>
+      </div>
+      
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <!-- Botón 1: VIP -->
+        <button onclick="openVipModal()" class="group relative flex flex-col items-center justify-center p-4 rounded-xl bg-gradient-to-b from-amber-500/20 to-amber-500/5 border border-amber-500/50 hover:border-amber-400 transition-all shadow-lg hover:shadow-amber-500/20">
+          <div class="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center text-2xl mb-2 group-hover:scale-110 transition-transform">💎</div>
+          <h3 class="font-extrabold text-amber-400 text-sm">Hazte VIP</h3>
+          <p class="text-[10px] text-slate-400 text-center mt-1">Acceso a pronósticos exclusivos y jugadas de alta probabilidad.</p>
+          <span class="mt-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-bold border border-amber-500/30">Ver Planes</span>
+        </button>
+
+        <!-- Botón 2: Agencias (Texto actualizado) -->
+        <a href="https://wa.me/584220250437?text=Hola,%20soy%20due%C3%B1o(a)%20de%20una%20agencia%20de%20loter%C3%ADa%20y%20quiero%20recibir%20tr%C3%A1fico%20de%20jugadores%20desde%20su%20bot." target="_blank" class="group relative flex flex-col items-center justify-center p-4 rounded-xl bg-gradient-to-b from-slate-700/40 to-slate-800/20 border border-slate-600 hover:border-slate-400 transition-all shadow-lg">
+          <div class="w-12 h-12 rounded-full bg-slate-700 flex items-center justify-center text-2xl mb-2 group-hover:scale-110 transition-transform">🤝</div>
+          <h3 class="font-extrabold text-slate-200 text-sm">Socio / Agencia</h3>
+          <p class="text-[10px] text-slate-400 text-center mt-1">Conecta tu agencia con nuestra comunidad de jugadores. ¡Recibe usuarios listos para jugar!</p>
+          <span class="mt-2 px-3 py-1 rounded-full bg-slate-600/50 text-slate-300 text-[10px] font-bold border border-slate-500">Contactar</span>
+        </a>
+      </div>
+    </section>
+
     <!-- AVISO LEGAL -->
     <footer class="text-center text-[11px] text-slate-500 pb-4 px-2 leading-relaxed">
       <strong>Nota Metodológica:</strong> Esta herramienta presenta indicadores estadísticos, frecuencias históricas y modelos de proyección de tendencias basados en resultados públicos. Su contenido es estrictamente informativo y analítico.
@@ -224,6 +252,58 @@
         <button id="ad-confirm-btn" disabled onclick="completeAdUnlock()" class="px-5 py-2.5 rounded-xl bg-slate-700 text-slate-400 font-extrabold text-xs transition cursor-not-allowed hidden">
           🔓 Ver Proyección Ahora
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE PLANES VIP -->
+  <div id="vip-modal" class="hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-panel border border-amber-500/50 rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-5 shadow-2xl relative">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+        <h3 class="font-black text-lg text-amber-400">⭐️ PLANES V.I.P ⭐️</h3>
+        <button onclick="closeVipModal()" class="text-slate-400 hover:text-white text-xl px-2">✕</button>
+      </div>
+
+      <div class="space-y-4">
+        <!-- Plan Tripletas -->
+        <div class="bg-obsidian border border-slate-700 rounded-xl p-4">
+          <div class="flex justify-between items-center mb-2">
+            <div class="flex items-center gap-2">
+              <h4 class="font-extrabold text-white text-sm">⭐️ PLAN ESPECIAL TRIPLETAS</h4>
+              <span class="px-2 py-0.5 rounded bg-slate-700 text-slate-300 text-[10px] font-bold">15 DÍAS</span>
+            </div>
+            <span class="text-amber-400 font-black">1.000 Bs</span>
+          </div>
+          <p class="text-[11px] text-slate-300 mb-2">3 pronósticos en tendencia para Lotto Activo, Lotto Rey y La Granjita.</p>
+          <a href="https://wa.me/584220250437?text=quiero%20el%20Plan%20Tripletas" target="_blank" class="block text-center w-full py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition">Pagar por WhatsApp</a>
+        </div>
+
+        <!-- Plan Básico -->
+        <div class="bg-obsidian border border-emerald-500/50 rounded-xl p-4 relative overflow-hidden">
+          <div class="absolute top-0 right-0 bg-emerald-500 text-slate-950 text-[9px] font-black px-2 py-1 rounded-bl-lg">RECOMENDADO</div>
+          <div class="flex justify-between items-center mb-2">
+            <div class="flex items-center gap-2">
+              <h4 class="font-extrabold text-white text-sm">🟢 PLAN BÁSICO</h4>
+              <span class="px-2 py-0.5 rounded bg-emerald-900/50 text-emerald-300 text-[10px] font-bold border border-emerald-500/30">15 DÍAS</span>
+            </div>
+            <span class="text-emerald-400 font-black">1.500 Bs</span>
+          </div>
+          <p class="text-[11px] text-slate-300 mb-2">5 pronósticos diarios + 1 jugada de alta probabilidad. <br><strong class="text-emerald-400">¡Incluye 4 días GRATIS!</strong></p>
+          <a href="https://wa.me/584220250437?text=quiero%20el%20Plan%20Basico" target="_blank" class="block text-center w-full py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition">Pagar por WhatsApp</a>
+        </div>
+
+        <!-- Plan Premium -->
+        <div class="bg-gradient-to-br from-amber-900/40 to-obsidian border border-amber-500 rounded-xl p-4 shadow-lg shadow-amber-500/10">
+          <div class="flex justify-between items-center mb-2">
+            <div class="flex items-center gap-2">
+              <h4 class="font-extrabold text-amber-400 text-sm">😎 PLAN PREMIUM V.I.P</h4>
+              <span class="px-2 py-0.5 rounded bg-amber-900/50 text-amber-300 text-[10px] font-bold border border-amber-500/30">30 DÍAS</span>
+            </div>
+            <span class="text-amber-400 font-black text-lg">3.000 Bs</span>
+          </div>
+          <p class="text-[11px] text-slate-300 mb-2">5 pronósticos diarios + 3 en tendencia (Lotto Activo, Lotto Rey, La Granjita). Datos filtrados y exclusivos.</p>
+          <a href="https://wa.me/584220250437?text=quiero%20el%20Plan%20Premium%20VIP" target="_blank" class="block text-center w-full py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition">Pagar por WhatsApp</a>
+        </div>
       </div>
     </div>
   </div>
@@ -394,9 +474,8 @@
 
     const LOCAL_STATE_KEY = 'ojo_horus_radar_state_v3';
     
-    // --- NUEVA LÓGICA DE CANDADOS EN FIREBASE (ANTI-HACKEO) ---
     let currentTgUser = null;
-    let userUnlocks = {}; // Caché local para validación síncrona
+    let userUnlocks = {}; 
 
     function safeGetStorage(key) {
       try { return window.localStorage ? window.localStorage.getItem(key) : null; } catch (e) { return null; }
@@ -801,7 +880,6 @@
         
         isCloudReady = true;
         
-        // Escuchar desbloqueos del usuario en Firestore
         if (currentTgUser && currentTgUser.id) {
           const userRef = doc(db, 'ojo_horus_users', String(currentTgUser.id));
           onSnapshot(userRef, (docSnap) => {
@@ -811,7 +889,7 @@
                 const newUnlocks = {};
                 data.unlocks.forEach(id => newUnlocks[id] = true);
                 userUnlocks = newUnlocks;
-                renderDrawCards(); // Re-renderizar para mostrar desbloqueados
+                renderDrawCards(); 
               }
             }
           });
@@ -1045,7 +1123,6 @@
       confirmBtn.classList.add('hidden');
       modal.classList.remove('hidden');
 
-      // Lógica estricta de Monetag (Solo desbloquea si el SDK devuelve éxito)
       if (typeof window.show_10088762 === 'function') {
         try {
           window.show_10088762().then(() => {
@@ -1198,7 +1275,6 @@
       const currentlyEnabled = safeGetStorage('tg_push_enabled') === '1';
       const nextState = !currentlyEnabled;
       
-      // Pedir permiso oficial de Telegram
       if (nextState && window.Telegram?.WebApp?.requestWriteAccess) {
         window.Telegram.WebApp.requestWriteAccess((granted) => {
           if (!granted) {
@@ -1249,18 +1325,24 @@
       if (!(await trySave())) setTimeout(() => { trySave(); }, 3500);
     }
 
+    function openVipModal() {
+      document.getElementById('vip-modal').classList.remove('hidden');
+    }
+    function closeVipModal() {
+      document.getElementById('vip-modal').classList.add('hidden');
+    }
+
     function registerServiceWorker() {
       if ('serviceWorker' in navigator) navigator.serviceWorker.register('./service-worker.js').catch(() => {});
     }
 
     Object.assign(window, {
-      toggleOperatorPanel, publishDrawResult, resetAllUnlocksForTest, openAdUnlockModal, closeAdModal, completeAdUnlock, syncExternalSourceNow, toggleUserPushNotifications
+      toggleOperatorPanel, publishDrawResult, resetAllUnlocksForTest, openAdUnlockModal, closeAdModal, completeAdUnlock, syncExternalSourceNow, toggleUserPushNotifications, openVipModal, closeVipModal
     });
 
     registerServiceWorker();
 
     window.addEventListener('DOMContentLoaded', () => {
-      // Mostrar panel admin solo si la URL tiene ?admin=true
       if (window.location.search.includes('admin=true')) {
         const adminPanel = document.getElementById('admin-controls');
         if (adminPanel) adminPanel.style.display = 'flex';
