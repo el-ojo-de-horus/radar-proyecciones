@@ -343,8 +343,6 @@ function parseResultsFromHtml(htmlText) {
   };
 }
 
-// Horarios de notificación en Venezuela (HH:MM en formato 24h)
-// Se envían 10 minutos antes de cada sorteo (10 AM, 1 PM, 4 PM y 7 PM) con las horas exactas del bloque siguiente
 const SCHEDULED_NOTIFICATIONS = [
   {
     id: 'pre_1000',
@@ -376,26 +374,38 @@ const SCHEDULED_NOTIFICATIONS = [
   }
 ];
 
-async function sendTelegramMessage(botToken, chatId, text) {
+// --- NUEVA FUNCIÓN MEJORADA CON BOTÓN INLINE Y WEB_APP ---
+async function sendTelegramMessage(botToken, chatId, text, miniAppUrl) {
   const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+  
+  const payload = {
+    chat_id: chatId,
+    text: text,
+    parse_mode: 'HTML',
+    disable_web_page_preview: true
+  };
+
+  // Si hay URL, agregamos el botón nativo de Telegram para abrir la WebApp
+  if (miniAppUrl) {
+    payload.reply_markup = {
+      inline_keyboard: [[
+        { text: '🚀 Abrir Radar en Vivo', web_app: { url: miniAppUrl } }
+      ]]
+    };
+  }
+
   const resp = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      chat_id: chatId,
-      text,
-      parse_mode: 'HTML',
-      disable_web_page_preview: true
-    })
+    body: JSON.stringify(payload)
   });
-  const data = await resp.json();
-  return data;
+  return await resp.json();
 }
 
 async function processScheduledTelegramAlerts(todayStamp, veNow) {
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
   if (!botToken) {
-    console.log('TELEGRAM_BOT_TOKEN no configurado; omitiendo avisos a usuarios.');
+    console.log('TELEGRAM_BOT_TOKEN no configurado; omitiendo avisos.');
     return;
   }
 
@@ -406,7 +416,6 @@ async function processScheduledTelegramAlerts(todayStamp, veNow) {
     ? (notifSnap.data()?.sentIds || [])
     : [];
 
-  // Buscar un horario programado dentro de una ventana de 10 minutos que aún no se haya enviado hoy
   const dueSlot = SCHEDULED_NOTIFICATIONS.find(slot => {
     if (sentToday.includes(slot.id)) return false;
     const slotMinutes = slot.hour * 60 + slot.minute;
@@ -422,23 +431,38 @@ async function processScheduledTelegramAlerts(todayStamp, veNow) {
   }
 
   const miniAppUrl = process.env.MINI_APP_URL || '';
-  const fullMessage = miniAppUrl
-    ? `👑 <b>EL OJO DE HORUS</b> 🔥\n\n${dueSlot.text}\n\n👉 <a href="${miniAppUrl}">Abrir Radar en Vivo</a>`
-    : `👑 <b>EL OJO DE HORUS</b> 🔥\n\n${dueSlot.text}`;
-
+  const usersList = subsSnap.docs;
   let delivered = 0;
-  for (const userDoc of subsSnap.docs) {
-    const sub = userDoc.data();
-    if (!sub?.chatId) continue;
-    try {
-      const result = await sendTelegramMessage(botToken, sub.chatId, fullMessage);
-      if (result.ok) {
-        delivered += 1;
-      } else if (result.error_code === 403) {
-        // El usuario bloqueó el bot: desactivar para no reintentar
-        await userDoc.ref.set({ active: false }, { merge: true });
+
+  console.log(`Iniciando envío para el bloque ${dueSlot.id}. Total usuarios: ${usersList.length}`);
+
+  // --- NUEVO SISTEMA DE LOTES (BATCHING) ---
+  for (let i = 0; i < usersList.length; i += 25) {
+    const batch = usersList.slice(i, i + 25);
+    
+    await Promise.all(batch.map(async (userDoc) => {
+      const sub = userDoc.data();
+      if (!sub?.chatId) return;
+      
+      // Personalización del mensaje
+      const userName = sub.firstName ? `, ${sub.firstName}` : '';
+      const customText = `👑 <b>EL OJO DE HORUS</b> 🔥\n\nHola${userName}. ${dueSlot.text}`;
+
+      try {
+        const result = await sendTelegramMessage(botToken, sub.chatId, customText, miniAppUrl);
+        if (result.ok) {
+          delivered += 1;
+        } else if (result.error_code === 403) {
+          // El usuario bloqueó el bot: desactivar para no reintentar
+          await userDoc.ref.set({ active: false }, { merge: true });
+        }
+      } catch (e) {
+        // Ignorar errores de red individuales para no romper el lote
       }
-    } catch (e) {}
+    }));
+
+    // Pausa de 1 segundo entre lotes para no saturar a Telegram
+    await new Promise(resolve => setTimeout(resolve, 1000));
   }
 
   await notifStateRef.set({
@@ -447,7 +471,8 @@ async function processScheduledTelegramAlerts(todayStamp, veNow) {
     lastSentAt: new Date().toISOString(),
     lastDeliveredCount: delivered
   });
-  console.log(`Aviso programado (${dueSlot.id}) enviado a ${delivered} usuarios.`);
+  
+  console.log(`✅ Aviso (${dueSlot.id}) enviado con éxito a ${delivered} usuarios.`);
 }
 
 async function run() {
@@ -484,7 +509,7 @@ async function run() {
 
   let changed = Boolean(isNewDayLA || isNewDayLG);
   if (changed) {
-    console.log(`Nuevo día detectado (${todayStamp}). Reiniciando sorteos y aciertos para la nueva jornada.`);
+    console.log(`Nuevo día detectado (${todayStamp}). Reiniciando sorteos.`);
   }
 
   const url = 'https://lotoven.com/animalitos/';
@@ -519,7 +544,7 @@ async function run() {
       };
       recomputeAndSyncHits(currentData.lotto_activo, todayStamp);
       changed = true;
-      console.log(`Actualizado Lotto Activo: ${latest.hour} -> #${latest.num} (Aciertos: ${currentData.lotto_activo.hits.length})`);
+      console.log(`Actualizado Lotto Activo: ${latest.hour} -> #${latest.num}`);
     }
   }
 
@@ -539,7 +564,7 @@ async function run() {
       };
       recomputeAndSyncHits(currentData.la_granjita, todayStamp);
       changed = true;
-      console.log(`Actualizado La Granjita: ${latest.hour} -> #${latest.num} (Aciertos: ${currentData.la_granjita.hits.length})`);
+      console.log(`Actualizado La Granjita: ${latest.hour} -> #${latest.num}`);
     }
   }
 
