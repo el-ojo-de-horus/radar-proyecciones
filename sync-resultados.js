@@ -374,7 +374,6 @@ const SCHEDULED_NOTIFICATIONS = [
   }
 ];
 
-// --- NUEVA FUNCIÓN MEJORADA CON BOTÓN INLINE Y WEB_APP ---
 async function sendTelegramMessage(botToken, chatId, text, miniAppUrl) {
   const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
   
@@ -385,7 +384,6 @@ async function sendTelegramMessage(botToken, chatId, text, miniAppUrl) {
     disable_web_page_preview: true
   };
 
-  // Si hay URL, agregamos el botón nativo de Telegram para abrir la WebApp
   if (miniAppUrl) {
     payload.reply_markup = {
       inline_keyboard: [[
@@ -419,10 +417,14 @@ async function processScheduledTelegramAlerts(todayStamp, veNow) {
   const dueSlot = SCHEDULED_NOTIFICATIONS.find(slot => {
     if (sentToday.includes(slot.id)) return false;
     const slotMinutes = slot.hour * 60 + slot.minute;
-    return nowMinutes >= slotMinutes && nowMinutes <= slotMinutes + 10;
+    // VENTANA AMPLIADA A 30 MINUTOS PARA EVITAR FALLOS POR RETRASO DE GITHUB
+    return nowMinutes >= slotMinutes && nowMinutes <= slotMinutes + 30;
   });
 
-  if (!dueSlot) return;
+  if (!dueSlot) {
+    console.log(`⏳ No hay avisos programados para esta hora exacta (${veNow.getHours()}:${String(veNow.getMinutes()).padStart(2, '0')}).`);
+    return;
+  }
 
   const subsSnap = await db.collection('ojo_horus_subscribers').where('active', '==', true).get();
   if (subsSnap.empty) {
@@ -436,7 +438,6 @@ async function processScheduledTelegramAlerts(todayStamp, veNow) {
 
   console.log(`Iniciando envío para el bloque ${dueSlot.id}. Total usuarios: ${usersList.length}`);
 
-  // --- NUEVO SISTEMA DE LOTES (BATCHING) ---
   for (let i = 0; i < usersList.length; i += 25) {
     const batch = usersList.slice(i, i + 25);
     
@@ -444,7 +445,6 @@ async function processScheduledTelegramAlerts(todayStamp, veNow) {
       const sub = userDoc.data();
       if (!sub?.chatId) return;
       
-      // Personalización del mensaje
       const userName = sub.firstName ? `, ${sub.firstName}` : '';
       const customText = `👑 <b>EL OJO DE HORUS</b> 🔥\n\nHola${userName}. ${dueSlot.text}`;
 
@@ -453,15 +453,11 @@ async function processScheduledTelegramAlerts(todayStamp, veNow) {
         if (result.ok) {
           delivered += 1;
         } else if (result.error_code === 403) {
-          // El usuario bloqueó el bot: desactivar para no reintentar
           await userDoc.ref.set({ active: false }, { merge: true });
         }
-      } catch (e) {
-        // Ignorar errores de red individuales para no romper el lote
-      }
+      } catch (e) {}
     }));
 
-    // Pausa de 1 segundo entre lotes para no saturar a Telegram
     await new Promise(resolve => setTimeout(resolve, 1000));
   }
 
