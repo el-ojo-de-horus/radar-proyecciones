@@ -6,73 +6,26 @@ admin.initializeApp({
 });
 const db = admin.firestore();
 
-const VALID_NUMS = new Set([
-  '0', '00', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10',
-  '11', '12', '13', '14', '15', '16', '17', '18', '19', '20',
-  '21', '22', '23', '24', '25', '26', '27', '28', '29', '30',
-  '31', '32', '33', '34', '35', '36'
-]);
-
 const DRAW_HOURS = [
   '08:00 AM', '09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM',
   '01:00 PM', '02:00 PM', '03:00 PM', '04:00 PM', '05:00 PM',
   '06:00 PM', '07:00 PM'
 ];
 
-const ANIMALITOS_CATALOG = [
-  { num: '00', name: 'BALLENA', emoji: '🐳' },
-  { num: '0', name: 'DELFIN', emoji: '🐬' },
-  { num: '1', name: 'CARNERO', emoji: '🐏' },
-  { num: '2', name: 'TORO', emoji: '🐃' },
-  { num: '3', name: 'CIEMPIÉS', emoji: '🐛' },
-  { num: '4', name: 'ALACRÁN', emoji: '🦂' },
-  { num: '5', name: 'LEÓN', emoji: '🦁' },
-  { num: '6', name: 'RANA', emoji: '🐸' },
-  { num: '7', name: 'PERICO', emoji: '🦜' },
-  { num: '8', name: 'RATÓN', emoji: '🐭' },
-  { num: '9', name: 'ÁGUILA', emoji: '🦅' },
-  { num: '10', name: 'TIGRE', emoji: '🐯' },
-  { num: '11', name: 'GATO', emoji: '🐱' },
-  { num: '12', name: 'CABALLO', emoji: '🐎' },
-  { num: '13', name: 'MONO', emoji: '🐵' },
-  { num: '14', name: 'PALOMA', emoji: '🕊' },
-  { num: '15', name: 'ZORRO', emoji: '🦊' },
-  { num: '16', name: 'OSO', emoji: '🐻' },
-  { num: '17', name: 'PAVO', emoji: '🦃' },
-  { num: '18', name: 'BURRO', emoji: '🐴' },
-  { num: '19', name: 'CHIVO', emoji: '🐐' },
-  { num: '20', name: 'COCHINO', emoji: '🐷' },
-  { num: '21', name: 'GALLO', emoji: '🐓' },
-  { num: '22', name: 'CAMELLO', emoji: '🐪' },
-  { num: '23', name: 'CEBRA', emoji: '🦓' },
-  { num: '24', name: 'IGUANA', emoji: '🦎' },
-  { num: '25', name: 'GALLINA', emoji: '🐔' },
-  { num: '26', name: 'VACA', emoji: '🐮' },
-  { num: '27', name: 'PERRO', emoji: '🐶' },
-  { num: '28', name: 'ZAMURO', emoji: '⬛️' },
-  { num: '29', name: 'ELEFANTE', emoji: '🐘' },
-  { num: '30', name: 'CAIMÁN', emoji: '🐊' },
-  { num: '31', name: 'LAPA', emoji: '🦦' },
-  { num: '32', name: 'ARDILLA', emoji: '🐿' },
-  { num: '33', name: 'PESCADO', emoji: '🐟' },
-  { num: '34', name: 'VENADO', emoji: '🦌' },
-  { num: '35', name: 'JIRAFA', emoji: '🦒' },
-  { num: '36', name: 'CULEBRA', emoji: '🐍' }
-];
+const VALID_NUMS = new Set([
+  '00', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10',
+  '11', '12', '13', '14', '15', '16', '17', '18', '19', '20',
+  '21', '22', '23', '24', '25', '26', '27', '28', '29', '30',
+  '31', '32', '33', '34', '35', '36'
+]);
 
-const COMPLEMENT_TERMINAL = { 0: 5, 5: 0, 1: 6, 6: 1, 2: 7, 7: 2, 3: 8, 8: 3, 4: 9, 9: 4 };
-const VISUAL_INVERSION = { '6': '9', '9': '6', '16': '19', '19': '16', '26': '29', '29': '26' };
-
-const VIP_TRIANGULATIONS = [
-  { pair: ['12', '18'], target: '23' },
-  { pair: ['0', '33'], target: '00' },
-  { pair: ['11', '27'], target: '5' },
-  { pair: ['5', '10'], target: '25' },
-  { pair: ['2', '26'], target: '12' },
-  { pair: ['14', '21'], target: '9' },
-  { pair: ['8', '20'], target: '32' },
-  { pair: ['35', '15'], target: '10' }
-];
+function normalizeAnimalNum(numRaw) {
+  const s = String(numRaw ?? '0').trim();
+  if (s === '00') return '00';
+  const val = parseInt(s, 10);
+  if (!Number.isNaN(val) && val >= 0 && val <= 36) return String(val);
+  return '0';
+}
 
 function normalizeHourLabel(hourStr) {
   if (!hourStr) return '';
@@ -87,11 +40,11 @@ function getHourOrderIndex(hourStr) {
   return idx === -1 ? 999 : idx;
 }
 
-function normalizeAnimalNum(numStr) {
-  const raw = String(numStr ?? '0').trim();
-  if (raw === '00') return '00';
-  const parsed = parseInt(raw, 10);
-  return Number.isNaN(parsed) ? '0' : String(parsed);
+function getNextHourLabel(currentHour) {
+  const norm = normalizeHourLabel(currentHour);
+  const idx = DRAW_HOURS.indexOf(norm);
+  if (idx === -1 || idx >= DRAW_HOURS.length - 1) return DRAW_HOURS[0];
+  return DRAW_HOURS[idx + 1];
 }
 
 function sortHistoryChronologically(historyList = []) {
@@ -102,24 +55,13 @@ function sortHistoryChronologically(historyList = []) {
     mapByHour.set(normHour, {
       hour: normHour,
       num: normalizeAnimalNum(entry.num),
-      isHit: Boolean(entry.isHit)
+      isHit: Boolean(entry.isHit),
+      hitType: entry.hitType || null
     });
   });
   return Array.from(mapByHour.values()).sort(
     (a, b) => getHourOrderIndex(a.hour) - getHourOrderIndex(b.hour)
   );
-}
-
-function getAnimalByNum(numStr) {
-  const normalized = normalizeAnimalNum(numStr);
-  return ANIMALITOS_CATALOG.find(a => a.num === normalized) || ANIMALITOS_CATALOG[1];
-}
-
-function getNextHourLabel(currentHour) {
-  const norm = normalizeHourLabel(currentHour);
-  const idx = DRAW_HOURS.indexOf(norm);
-  if (idx === -1 || idx >= DRAW_HOURS.length - 1) return DRAW_HOURS[0];
-  return DRAW_HOURS[idx + 1];
 }
 
 function getVenezuelaDateParts() {
@@ -138,157 +80,6 @@ function getVenezuelaDateStamp() {
   return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
 
-function getTerminalDigit(numStr) {
-  if (numStr === '00') return 0;
-  const n = parseInt(numStr, 10) || 0;
-  return n % 10;
-}
-
-function computeDatePyramid(dateObj = getVenezuelaDateParts().dateObj) {
-  const dd = String(dateObj.getDate()).padStart(2, '0');
-  const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
-  const yyyy = String(dateObj.getFullYear());
-  let row = `${dd}${mm}${yyyy}`.split('').map(Number);
-
-  while (row.length > 2) {
-    const nextRow = [];
-    for (let i = 0; i < row.length - 1; i++) {
-      nextRow.push((row[i] + row[i + 1]) % 10);
-    }
-    row = nextRow;
-  }
-  const base = row[0] ?? 0;
-  const vertex = ((row[0] ?? 0) + (row[1] ?? 0)) % 10;
-  return { vertex, base };
-}
-
-function findCandidatesByTerminal(terminalDigit, excludeNums = new Set()) {
-  return ANIMALITOS_CATALOG.filter(
-    a => getTerminalDigit(a.num) === terminalDigit && !excludeNums.has(a.num)
-  );
-}
-
-function computeStatisticalProjection(sorteoKey, lastNum, nextHour, history = []) {
-  const lastItem = getAnimalByNum(lastNum);
-  const recentNums = (history || []).map(h => normalizeAnimalNum(h.num));
-  if (!recentNums.includes(lastItem.num)) recentNums.push(lastItem.num);
-  const excludeSet = new Set(recentNums.slice(-3));
-
-  const { vertex, base } = computeDatePyramid();
-  const hourIdx = Math.max(0, DRAW_HOURS.indexOf(normalizeHourLabel(nextHour)));
-  const sorteoOffset = sorteoKey === 'lotto_activo' ? 0 : 1;
-
-  const terminalCounts = {};
-  recentNums.forEach(n => {
-    const t = getTerminalDigit(n);
-    terminalCounts[t] = (terminalCounts[t] || 0) + 1;
-  });
-  const lastTerminal = getTerminalDigit(lastItem.num);
-  const isTerminalSaturated = (terminalCounts[lastTerminal] || 0) >= 2;
-  const ruptureTerminal = isTerminalSaturated
-    ? COMPLEMENT_TERMINAL[lastTerminal]
-    : (lastTerminal + 1) % 10;
-
-  let vipTargetNum = null;
-  const lastTwo = recentNums.slice(-2);
-  if (lastTwo.length === 2) {
-    const foundPattern = VIP_TRIANGULATIONS.find(
-      p => (p.pair.includes(lastTwo[0]) && p.pair.includes(lastTwo[1]))
-    );
-    if (foundPattern && !excludeSet.has(foundPattern.target)) {
-      vipTargetNum = foundPattern.target;
-    }
-  }
-
-  const vertexPool = findCandidatesByTerminal(vertex, excludeSet);
-  const primary = vertexPool.length
-    ? vertexPool[(hourIdx + sorteoOffset) % vertexPool.length]
-    : getAnimalByNum(String((vertex + 10) % 37));
-  excludeSet.add(primary.num);
-
-  let backup1 = null;
-  if (vipTargetNum && !excludeSet.has(vipTargetNum)) {
-    backup1 = getAnimalByNum(vipTargetNum);
-  } else if (VISUAL_INVERSION[lastItem.num] && !excludeSet.has(VISUAL_INVERSION[lastItem.num])) {
-    backup1 = getAnimalByNum(VISUAL_INVERSION[lastItem.num]);
-  } else {
-    const rupturePool = findCandidatesByTerminal(ruptureTerminal, excludeSet);
-    backup1 = rupturePool.length
-      ? rupturePool[(hourIdx + sorteoOffset) % rupturePool.length]
-      : findCandidatesByTerminal(base, excludeSet)[0] || ANIMALITOS_CATALOG[2];
-  }
-  excludeSet.add(backup1.num);
-
-  const presentNums = new Set(recentNums);
-  const absentBaseCandidates = ANIMALITOS_CATALOG.filter(
-    a => !presentNums.has(a.num) && !excludeSet.has(a.num) && getTerminalDigit(a.num) === base
-  );
-  const absentCandidates = ANIMALITOS_CATALOG.filter(
-    a => !presentNums.has(a.num) && !excludeSet.has(a.num)
-  );
-  const fallbackPool = ANIMALITOS_CATALOG.filter(a => !excludeSet.has(a.num));
-
-  let backup2 = null;
-  if (absentBaseCandidates.length > 0) {
-    backup2 = absentBaseCandidates[(hourIdx + sorteoOffset) % absentBaseCandidates.length];
-  } else if (absentCandidates.length > 0) {
-    backup2 = absentCandidates[(hourIdx * 3 + sorteoOffset) % absentCandidates.length];
-  } else {
-    backup2 = fallbackPool[(hourIdx + sorteoOffset) % fallbackPool.length] || ANIMALITOS_CATALOG[14];
-  }
-
-  return {
-    primary,
-    backups: [backup1, backup2]
-  };
-}
-
-function recomputeAndSyncHits(draw, todayStamp) {
-  const sorted = sortHistoryChronologically(draw.history || []);
-  const hitsMap = new Map();
-
-  (draw.hits || []).forEach(h => {
-    if (h && h.hour) {
-      hitsMap.set(normalizeHourLabel(h.hour), h);
-    }
-  });
-
-  for (let i = 1; i < sorted.length; i++) {
-    const prev = sorted[i - 1];
-    const curr = sorted[i];
-    const historyBeforeCurr = sorted.slice(0, i);
-    const proj = computeStatisticalProjection(draw.key, prev.num, curr.hour, historyBeforeCurr);
-
-    let hitType = null;
-    if (proj.primary && proj.primary.num === curr.num) {
-      hitType = 'PRINCIPAL';
-    } else if (Array.isArray(proj.backups)) {
-      const bIdx = proj.backups.findIndex(b => b && b.num === curr.num);
-      if (bIdx !== -1) hitType = `RESPALDO #${bIdx + 1}`;
-    }
-
-    if (hitType) {
-      curr.isHit = true;
-      const animal = getAnimalByNum(curr.num);
-      hitsMap.set(curr.hour, {
-        id: `${todayStamp}_${curr.hour}_${curr.num}`,
-        hour: curr.hour,
-        num: animal.num,
-        name: animal.name,
-        emoji: animal.emoji,
-        type: hitType
-      });
-    } else {
-      curr.isHit = hitsMap.has(curr.hour);
-    }
-  }
-
-  draw.history = sorted;
-  draw.hits = Array.from(hitsMap.values()).sort(
-    (a, b) => getHourOrderIndex(b.hour) - getHourOrderIndex(a.hour)
-  ).slice(0, 12);
-}
-
 function parseResultsFromHtml(htmlText) {
   const cleanText = htmlText
     .replace(/<script[\s\S]*?<\/script>/gi, ' ')
@@ -305,8 +96,7 @@ function parseResultsFromHtml(htmlText) {
 
     for (const match of sliceText.matchAll(drawEntryRegex)) {
       const rawNum = normalizeAnimalNum(match[1]);
-      const rawHour = match[3].toUpperCase().replace(/\s+/g, ' ').trim();
-      const normalizedHour = rawHour.length === 7 ? `0${rawHour}` : rawHour;
+      const normalizedHour = normalizeHourLabel(match[3]);
 
       if (VALID_NUMS.has(rawNum) && !seenHours.has(normalizedHour)) {
         seenHours.add(normalizedHour);
@@ -374,28 +164,17 @@ const SCHEDULED_NOTIFICATIONS = [
   }
 ];
 
-async function sendTelegramMessage(botToken, chatId, text, miniAppUrl) {
+async function sendTelegramMessage(botToken, chatId, text) {
   const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
-  
-  const payload = {
-    chat_id: chatId,
-    text: text,
-    parse_mode: 'HTML',
-    disable_web_page_preview: true
-  };
-
-  if (miniAppUrl) {
-    payload.reply_markup = {
-      inline_keyboard: [[
-        { text: '🚀 Abrir Radar en Vivo', web_app: { url: miniAppUrl } }
-      ]]
-    };
-  }
-
   const resp = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
+    body: JSON.stringify({
+      chat_id: chatId,
+      text,
+      parse_mode: 'HTML',
+      disable_web_page_preview: true
+    })
   });
   return await resp.json();
 }
@@ -403,7 +182,7 @@ async function sendTelegramMessage(botToken, chatId, text, miniAppUrl) {
 async function processScheduledTelegramAlerts(todayStamp, veNow) {
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
   if (!botToken) {
-    console.log('TELEGRAM_BOT_TOKEN no configurado; omitiendo avisos.');
+    console.log('TELEGRAM_BOT_TOKEN no configurado; omitiendo avisos a usuarios.');
     return;
   }
 
@@ -417,14 +196,10 @@ async function processScheduledTelegramAlerts(todayStamp, veNow) {
   const dueSlot = SCHEDULED_NOTIFICATIONS.find(slot => {
     if (sentToday.includes(slot.id)) return false;
     const slotMinutes = slot.hour * 60 + slot.minute;
-    // VENTANA AMPLIADA A 30 MINUTOS PARA EVITAR FALLOS POR RETRASO DE GITHUB
-    return nowMinutes >= slotMinutes && nowMinutes <= slotMinutes + 30;
+    return nowMinutes >= slotMinutes && nowMinutes <= slotMinutes + 10;
   });
 
-  if (!dueSlot) {
-    console.log(`⏳ No hay avisos programados para esta hora exacta (${veNow.getHours()}:${String(veNow.getMinutes()).padStart(2, '0')}).`);
-    return;
-  }
+  if (!dueSlot) return;
 
   const subsSnap = await db.collection('ojo_horus_subscribers').where('active', '==', true).get();
   if (subsSnap.empty) {
@@ -433,32 +208,22 @@ async function processScheduledTelegramAlerts(todayStamp, veNow) {
   }
 
   const miniAppUrl = process.env.MINI_APP_URL || '';
-  const usersList = subsSnap.docs;
+  const fullMessage = miniAppUrl
+    ? `👑 <b>EL OJO DE HORUS</b> 🔥\n\n${dueSlot.text}\n\n👉 <a href="${miniAppUrl}">Abrir Radar en Vivo</a>`
+    : `👑 <b>EL OJO DE HORUS</b> 🔥\n\n${dueSlot.text}`;
+
   let delivered = 0;
-
-  console.log(`Iniciando envío para el bloque ${dueSlot.id}. Total usuarios: ${usersList.length}`);
-
-  for (let i = 0; i < usersList.length; i += 25) {
-    const batch = usersList.slice(i, i + 25);
-    
-    await Promise.all(batch.map(async (userDoc) => {
-      const sub = userDoc.data();
-      if (!sub?.chatId) return;
-      
-      const userName = sub.firstName ? `, ${sub.firstName}` : '';
-      const customText = `👑 <b>EL OJO DE HORUS</b> 🔥\n\nHola${userName}. ${dueSlot.text}`;
-
-      try {
-        const result = await sendTelegramMessage(botToken, sub.chatId, customText, miniAppUrl);
-        if (result.ok) {
-          delivered += 1;
-        } else if (result.error_code === 403) {
-          await userDoc.ref.set({ active: false }, { merge: true });
-        }
-      } catch (e) {}
-    }));
-
-    await new Promise(resolve => setTimeout(resolve, 1000));
+  for (const userDoc of subsSnap.docs) {
+    const sub = userDoc.data();
+    if (!sub?.chatId) continue;
+    try {
+      const result = await sendTelegramMessage(botToken, sub.chatId, fullMessage);
+      if (result.ok) {
+        delivered += 1;
+      } else if (result.error_code === 403) {
+        await userDoc.ref.set({ active: false }, { merge: true });
+      }
+    } catch (e) {}
   }
 
   await notifStateRef.set({
@@ -467,44 +232,24 @@ async function processScheduledTelegramAlerts(todayStamp, veNow) {
     lastSentAt: new Date().toISOString(),
     lastDeliveredCount: delivered
   });
-  
-  console.log(`✅ Aviso (${dueSlot.id}) enviado con éxito a ${delivered} usuarios.`);
+  console.log(`Aviso programado (${dueSlot.id}) enviado a ${delivered} usuarios.`);
 }
 
 async function run() {
   const docRef = db.doc('ojo_horus_radar/live_draws');
   const snap = await docRef.get();
+  const { dateObj: veNow } = getVenezuelaDateParts();
   const todayStamp = getVenezuelaDateStamp();
-
-  const emptyDrawState = (key, title, icon, accent) => ({
-    key,
-    title,
-    icon,
-    accent,
-    dateStamp: todayStamp,
-    lastHour: '',
-    nextHour: DRAW_HOURS[0],
-    lastNum: '0',
-    drawId: `${todayStamp}_${DRAW_HOURS[0]}`,
-    history: [],
-    hits: []
-  });
 
   const existingData = snap.exists ? snap.data() : {};
   const isNewDayLA = existingData.lotto_activo?.dateStamp !== todayStamp;
   const isNewDayLG = existingData.la_granjita?.dateStamp !== todayStamp;
 
-  const currentData = {
-    lotto_activo: isNewDayLA
-      ? emptyDrawState('lotto_activo', 'LOTTO ACTIVO', '🦁', 'amber')
-      : existingData.lotto_activo,
-    la_granjita: isNewDayLG
-      ? emptyDrawState('la_granjita', 'LA GRANJITA', '🐔', 'emerald')
-      : existingData.la_granjita
-  };
+  let laHistory = isNewDayLA ? [] : sortHistoryChronologically(existingData.lotto_activo?.history || []);
+  let lgHistory = isNewDayLG ? [] : sortHistoryChronologically(existingData.la_granjita?.history || []);
 
   let changed = Boolean(isNewDayLA || isNewDayLG);
-  if (changed) {
+  if (isNewDayLA || isNewDayLG) {
     console.log(`Nuevo día detectado (${todayStamp}). Reiniciando sorteos.`);
   }
 
@@ -520,59 +265,61 @@ async function run() {
   const html = await res.text();
 
   const { laPairs, lgPairs } = parseResultsFromHtml(html);
-
-  const veNow = getVenezuelaDateParts().dateObj;
   const isBeforeFirstDraw = veNow.getHours() < 8;
 
   if (!isBeforeFirstDraw && laPairs.length > 0) {
-    const mergedLa = sortHistoryChronologically([...(currentData.lotto_activo.history || []), ...laPairs]);
-    const latest = mergedLa[mergedLa.length - 1];
-    if (latest.hour !== currentData.lotto_activo.lastHour || latest.num !== currentData.lotto_activo.lastNum) {
-      const nextHour = getNextHourLabel(latest.hour);
-      currentData.lotto_activo = {
-        ...currentData.lotto_activo,
-        dateStamp: todayStamp,
-        lastHour: latest.hour,
-        nextHour,
-        lastNum: latest.num,
-        drawId: `${todayStamp}_${nextHour}`,
-        history: mergedLa
-      };
-      recomputeAndSyncHits(currentData.lotto_activo, todayStamp);
+    const mergedLa = sortHistoryChronologically([...laHistory, ...laPairs]);
+    if (JSON.stringify(mergedLa.map(x => `${x.hour}:${x.num}`)) !== JSON.stringify(laHistory.map(x => `${x.hour}:${x.num}`))) {
+      laHistory = mergedLa;
       changed = true;
-      console.log(`Actualizado Lotto Activo: ${latest.hour} -> #${latest.num}`);
     }
   }
 
   if (!isBeforeFirstDraw && lgPairs.length > 0) {
-    const mergedLg = sortHistoryChronologically([...(currentData.la_granjita.history || []), ...lgPairs]);
-    const latest = mergedLg[mergedLg.length - 1];
-    if (latest.hour !== currentData.la_granjita.lastHour || latest.num !== currentData.la_granjita.lastNum) {
-      const nextHour = getNextHourLabel(latest.hour);
-      currentData.la_granjita = {
-        ...currentData.la_granjita,
-        dateStamp: todayStamp,
-        lastHour: latest.hour,
-        nextHour,
-        lastNum: latest.num,
-        drawId: `${todayStamp}_${nextHour}`,
-        history: mergedLg
-      };
-      recomputeAndSyncHits(currentData.la_granjita, todayStamp);
+    const mergedLg = sortHistoryChronologically([...lgHistory, ...lgPairs]);
+    if (JSON.stringify(mergedLg.map(x => `${x.hour}:${x.num}`)) !== JSON.stringify(lgHistory.map(x => `${x.hour}:${x.num}`))) {
+      lgHistory = mergedLg;
       changed = true;
-      console.log(`Actualizado La Granjita: ${latest.hour} -> #${latest.num}`);
     }
   }
 
   if (changed) {
+    const latestLA = laHistory.length > 0 ? laHistory[laHistory.length - 1] : null;
+    const latestLG = lgHistory.length > 0 ? lgHistory[lgHistory.length - 1] : null;
+    const nextHourLA = latestLA ? getNextHourLabel(latestLA.hour) : DRAW_HOURS[0];
+    const nextHourLG = latestLG ? getNextHourLabel(latestLG.hour) : DRAW_HOURS[0];
+
     await docRef.set({
-      ...currentData,
+      lotto_activo: {
+        key: 'lotto_activo',
+        title: 'LOTTO ACTIVO',
+        icon: '🦁',
+        accent: 'amber',
+        dateStamp: todayStamp,
+        history: laHistory,
+        lastHour: latestLA ? latestLA.hour : '',
+        lastNum: latestLA ? latestLA.num : '0',
+        nextHour: nextHourLA,
+        drawId: `${todayStamp}_${nextHourLA}`
+      },
+      la_granjita: {
+        key: 'la_granjita',
+        title: 'LA GRANJITA',
+        icon: '🐔',
+        accent: 'emerald',
+        dateStamp: todayStamp,
+        history: lgHistory,
+        lastHour: latestLG ? latestLG.hour : '',
+        lastNum: latestLG ? latestLG.num : '0',
+        nextHour: nextHourLG,
+        drawId: `${todayStamp}_${nextHourLG}`
+      },
       dateStamp: todayStamp,
       updatedAt: new Date().toISOString()
-    });
-    console.log('Firestore actualizado correctamente.');
+    }, { merge: true });
+    console.log(`Resultados oficiales sincronizados -> LA: ${laHistory.length} | LG: ${lgHistory.length}`);
   } else {
-    console.log('Sin cambios respecto a Firestore.');
+    console.log('Sin cambios nuevos en resultados.');
   }
 
   await processScheduledTelegramAlerts(todayStamp, veNow);
