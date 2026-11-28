@@ -2,7 +2,7 @@ name: Sincronización Automática de Resultados y Alertas
 
 on:
   schedule:
-    # Sincronización continua de resultados cada 15 minutos en horario de sorteos (08:00 AM - 07:45 PM VET = 12:00 - 23:45 UTC)
+    # Sincronización continua cada 15 minutos en horario de sorteos (08:00 AM - 07:45 PM VET = 12:00 - 23:45 UTC)
     - cron: '*/15 12-23 * * *'
     # Ejecución puntual a las :50 de cada hora previa a tus 4 alertas (09:50 AM, 12:50 PM, 03:50 PM, 06:50 PM VET = 13:50, 16:50, 19:50, 22:50 UTC)
     - cron: '50 13,16,19,22 * * *'
@@ -23,12 +23,24 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Instalar firebase-admin
-        run: npm install firebase-admin
+      - name: Configurar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-      - name: Ejecutar sincronización hacia Firestore y alertas Telegram
+      - name: Instalar dependencias (firebase-admin en Node y Python)
+        run: |
+          npm install firebase-admin
+          pip install firebase-admin
+
+      - name: Sincronizar resultados oficiales y alertas Telegram
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           MINI_APP_URL: ${{ secrets.MINI_APP_URL }}
         run: node sync-resultados.js
+
+      - name: Ejecutar Cerebro Estadístico Python (Top 3 Probables por Hora)
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: python cerebro.py
